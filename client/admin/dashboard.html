@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — Brightloop</title>
+  <meta name="description" content="Brightloop Administrator Control Panel" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="nav-item active">
+          <span>📊 Overview</span>
+        </a>
+        <a href="/admin/users.html" class="nav-item">
+          <span>👥 User & Staff Mgmt</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Catalog & Pricing owned by Member 2')">
+          <span>📦 Products & Plans</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Quotations & Subscriptions owned by Member 3')">
+          <span>📑 Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Invoicing & Payments owned by Member 4')">
+          <span>💳 Billing & Invoices</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">A</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Administrator</div>
+            <span id="user-role-badge" class="badge badge-admin">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Administrator Console</h1>
+        <div class="topbar-actions">
+          <button id="logout-btn" class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Overview Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Total System Users</div>
+            <div id="stat-total-users" class="stat-value">--</div>
+            <div class="stat-desc">Administrators, staff, and customers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Active Staff</div>
+            <div id="stat-staff-count" class="stat-value">--</div>
+            <div class="stat-desc">Authorized operations team</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Customer Accounts</div>
+            <div id="stat-customer-count" class="stat-value">--</div>
+            <div class="stat-desc">Subscribed client organizations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">API Status</div>
+            <div class="stat-value" style="color: #10b981;">Operational</div>
+            <div class="stat-desc">MySQL 8+ / Express / Prisma 6.19.3</div>
+          </div>
+        </div>
+
+        <!-- System Architecture & Module Status -->
+        <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 12px;">Brightloop Module Readiness</h2>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 20px;">
+            Core authentication infrastructure is active. Other module controllers can mount to Express via the shared router.
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 16px;">
+              <span class="badge badge-active" style="margin-bottom: 8px;">Active</span>
+              <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 1: Auth & Core</h3>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">JWT, Bcrypt, Roles, User/Customer APIs</p>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
+              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+              <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 2: Catalog & Pricing</h3>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Products, Variants, Plans, Taxes, Discounts</p>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
+              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+              <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 3: Quotes & Subscriptions</h3>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Quotation Lifecycle & Conversions</p>
+            </div>
+            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
+              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+              <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 4: Billing & Analytics</h3>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Recurring Invoicing, Partial Payments</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display: flex; gap: 12px;">
+          <a href="/admin/users.html" class="btn btn-primary">
+            <span>Manage Users & Staff Accounts</span>
+          </a>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['ADMIN']);
+      if (!user) return;
+
+      try {
+        const [usersRes, staffRes, customersRes] = await Promise.all([
+          api.get('/users?limit=1'),
+          api.get('/users?role=STAFF&limit=1'),
+          api.get('/customers?limit=1'),
+        ]);
+
+        document.getElementById('stat-total-users').textContent = usersRes.data.pagination.total;
+        document.getElementById('stat-staff-count').textContent = staffRes.data.pagination.total;
+        document.getElementById('stat-customer-count').textContent = customersRes.data.pagination.total;
+      } catch (e) {
+        console.error('Failed to load dashboard metrics:', e);
+      }
+    });
+  </script>
+</body>
+</html>
