@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoices & Payments — Customer Portal | Brightloop</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/customer/dashboard.html" class="nav-item">
+          <span>🏢 Account Overview</span>
+        </a>
+        <a href="/customer/quotations.html" class="nav-item">
+          <span>📄 My Quotations</span>
+        </a>
+        <a href="/customer/subscriptions.html" class="nav-item">
+          <span>📑 My Subscriptions</span>
+        </a>
+        <a href="/customer/invoices.html" class="nav-item active">
+          <span>💳 Invoices & Payments</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">C</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Customer User</div>
+            <span id="user-role-badge" class="badge badge-customer">CUSTOMER</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Tax Invoices & Payment Center</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Overview Summary Cards -->
+        <div class="stats-grid" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <div class="stat-title">Total Invoiced</div>
+            <div id="stat-total-invoiced" class="stat-value">₹0.00</div>
+            <div class="stat-desc">Cumulative billing</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Paid to Date</div>
+            <div id="stat-total-paid" class="stat-value" style="color: #10b981;">₹0.00</div>
+            <div class="stat-desc">Successfully settled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Outstanding Balance</div>
+            <div id="stat-outstanding" class="stat-value" style="color: #f59e0b;">₹0.00</div>
+            <div class="stat-desc">Pending clearance</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Overdue Invoices</div>
+            <div id="stat-overdue-count" class="stat-value" style="color: #ef4444;">0</div>
+            <div class="stat-desc">Requires immediate action</div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="table-card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <input
+                type="text"
+                id="search-input"
+                class="form-control"
+                placeholder="Search by invoice number..."
+              />
+            </div>
+            <div style="width: 200px;">
+              <select id="status-filter" class="form-control">
+                <option value="">All Invoices</option>
+                <option value="UNPAID">Pending & Partial (Unpaid)</option>
+                <option value="OVERDUE">Overdue Only</option>
+                <option value="CONFIRMED">CONFIRMED</option>
+                <option value="PARTIALLY_PAID">PARTIALLY_PAID</option>
+                <option value="PAID">PAID</option>
+              </select>
+            </div>
+            <button id="refresh-btn" class="btn btn-secondary btn-sm">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Invoices Table -->
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="table" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Total (INR)</th>
+                  <th>Paid (INR)</th>
+                  <th>Balance Due</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-tbody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                    Loading your invoices...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Pay Invoice Modal (Razorpay Bridge) -->
+  <div id="pay-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 style="font-size: 1.15rem;">Pay Invoice Online</h3>
+        <button id="close-pay-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div style="padding: 24px;">
+        <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+          <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Invoice Target</div>
+          <div id="pay-inv-number" style="font-size: 1.2rem; font-weight: 700; color: #818cf8; margin-top: 2px;">--</div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.9rem;">
+            <span>Total Invoiced:</span>
+            <span id="pay-total-amount" style="font-weight: 600;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 0.9rem;">
+            <span>Outstanding Balance:</span>
+            <span id="pay-balance-due" style="font-weight: 700; color: #f59e0b;">₹0.00</span>
+          </div>
+        </div>
+
+        <form id="pay-form" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="pay-amount">Payment Amount (INR ₹) *</label>
+            <input
+              type="number"
+              id="pay-amount"
+              class="form-control"
+              step="0.01"
+              min="1"
+              required
+            />
+            <span class="form-hint">You can pay the full balance or make a partial installment.</span>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="pay-full-btn">
+              Pay Full Balance
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" id="pay-half-btn">
+              Pay 50%
+            </button>
+          </div>
+
+          <div id="pay-alert" class="auth-alert" style="margin-bottom: 16px;"></div>
+
+          <div class="modal-footer" style="padding: 0;">
+            <button type="button" id="cancel-pay-btn" class="btn btn-secondary">
+              Cancel
+            </button>
+            <button type="submit" id="submit-pay-btn" class="btn btn-primary">
+              Proceed to Razorpay Checkout
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Details Modal -->
+  <div id="inv-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 id="modal-inv-number" style="font-size: 1.2rem;">Invoice Details</h3>
+        <button id="close-inv-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+        <!-- Header Info -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Billed To</div>
+            <div id="modal-inv-customer" style="font-weight: 700; font-size: 1.1rem; margin-top: 2px;">--</div>
+            <div id="modal-inv-sub" style="font-size: 0.85rem; color: var(--text-muted);">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
+            <div id="modal-inv-status" style="margin-top: 4px;">--</div>
+            <div id="modal-inv-due" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">--</div>
+          </div>
+        </div>
+
+        <!-- Lines -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Invoice Line Breakdown</h4>
+        <div class="table-responsive" style="margin-bottom: 20px;">
+          <table class="table" style="width: 100%; font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>Item / Description</th>
+                <th style="text-align: right;">Qty</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Tax</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="modal-inv-lines">
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Allocations / Payments -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Payment History</h4>
+        <div class="table-responsive" style="margin-bottom: 24px;">
+          <table class="table" style="width: 100%; font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>Payment Ref</th>
+                <th>Method</th>
+                <th>Payment Date</th>
+                <th style="text-align: right;">Allocated Amount</th>
+              </tr>
+            </thead>
+            <tbody id="modal-inv-allocations">
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <a id="modal-inv-pdf-btn" href="#" target="_blank" class="btn btn-secondary">
+            📥 Download Tax Invoice PDF
+          </a>
+          <button type="button" id="modal-inv-pay-btn" class="btn btn-primary">
+            Pay Balance Online
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    let currentInvoices = [];
+    let activePayInvoice = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['CUSTOMER']);
+      if (!user) return;
+
+      loadInvoices();
+
+      document.getElementById('search-input').addEventListener('input', filterAndRender);
+      document.getElementById('status-filter').addEventListener('change', filterAndRender);
+      document.getElementById('refresh-btn').addEventListener('click', loadInvoices);
+
+      // Check URL parameters for direct pay action (e.g. from dashboard)
+      const urlParams = new URLSearchParams(window.location.search);
+      const autoPayId = urlParams.get('pay');
+      if (autoPayId) {
+        setTimeout(() => initiatePayment(autoPayId), 600);
+      }
+
+      // Pay Modal setup
+      const payModal = document.getElementById('pay-modal');
+      const closePayBtn = document.getElementById('close-pay-modal-btn');
+      const cancelPayBtn = document.getElementById('cancel-pay-btn');
+      const closePay = () => payModal.classList.remove('open');
+      closePayBtn.addEventListener('click', closePay);
+      cancelPayBtn.addEventListener('click', closePay);
+
+      // Details Modal setup
+      const invModal = document.getElementById('inv-modal');
+      const closeInvBtn = document.getElementById('close-inv-modal-btn');
+      closeInvBtn.addEventListener('click', () => invModal.classList.remove('open'));
+
+      // Pay Form Submit
+      document.getElementById('pay-form').addEventListener('submit', handlePaymentSubmit);
+
+      // Full / Half buttons
+      document.getElementById('pay-full-btn').addEventListener('click', () => {
+        if (!activePayInvoice) return;
+        const bal = parseFloat(activePayInvoice.outstandingAmount || activePayInvoice.totalAmount || 0);
+        document.getElementById('pay-amount').value = bal.toFixed(2);
+      });
+
+      document.getElementById('pay-half-btn').addEventListener('click', () => {
+        if (!activePayInvoice) return;
+        const bal = parseFloat(activePayInvoice.outstandingAmount || activePayInvoice.totalAmount || 0);
+        document.getElementById('pay-amount').value = (bal / 2).toFixed(2);
+      });
+    });
+
+    async function loadInvoices() {
+      const tbody = document.getElementById('invoices-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Loading your invoices...</td></tr>`;
+
+      try {
+        const res = await api.get('/invoices?limit=100');
+        currentInvoices = res.data?.items || [];
+
+        // Compute metrics
+        let totalInv = 0;
+        let totalPaid = 0;
+        let totalOut = 0;
+        let overdueCount = 0;
+
+        currentInvoices.forEach(inv => {
+          const total = parseFloat(inv.totalAmount || 0);
+          const paid = parseFloat(inv.paidAmount || 0);
+          const out = parseFloat(inv.outstandingAmount != null ? inv.outstandingAmount : total);
+
+          totalInv += total;
+          totalPaid += paid;
+          if (inv.status !== 'CANCELLED') {
+            totalOut += out;
+          }
+          if (inv.isOverdue) overdueCount++;
+        });
+
+        document.getElementById('stat-total-invoiced').textContent = '₹' + totalInv.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        document.getElementById('stat-total-paid').textContent = '₹' + totalPaid.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        document.getElementById('stat-outstanding').textContent = '₹' + totalOut.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        document.getElementById('stat-overdue-count').textContent = overdueCount;
+
+        filterAndRender();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">Failed to load invoices: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterAndRender() {
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const filter = document.getElementById('status-filter').value;
+
+      const filtered = currentInvoices.filter(inv => {
+        const matchSearch = !search || inv.invoiceNumber.toLowerCase().includes(search);
+        if (!matchSearch) return false;
+
+        const out = parseFloat(inv.outstandingAmount != null ? inv.outstandingAmount : inv.totalAmount);
+
+        if (filter === 'UNPAID') {
+          return out > 0 && inv.status !== 'CANCELLED';
+        }
+        if (filter === 'OVERDUE') {
+          return !!inv.isOverdue;
+        }
+        if (filter && inv.status !== filter) {
+          return false;
+        }
+        return true;
+      });
+
+      renderInvoices(filtered);
+    }
+
+    function renderInvoices(items) {
+      const tbody = document.getElementById('invoices-tbody');
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">No invoices match your selection.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(inv => {
+        const isOverdue = inv.isOverdue;
+        const statusBadge = isOverdue
+          ? `<span class="badge badge-overdue">⚠️ OVERDUE</span>`
+          : `<span class="badge badge-${inv.status.toLowerCase().replace(/_/g, '-')}">${inv.status}</span>`;
+
+        const total = parseFloat(inv.totalAmount || 0);
+        const paid = parseFloat(inv.paidAmount || 0);
+        const balance = parseFloat(inv.outstandingAmount != null ? inv.outstandingAmount : total);
+        const isPayable = balance > 0 && inv.status !== 'CANCELLED';
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: #818cf8;">${inv.invoiceNumber}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(inv.invoiceDate).toLocaleDateString()}</td>
+            <td style="color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-size: 0.85rem; font-weight: ${isOverdue ? '700' : 'normal'};">
+              ${new Date(inv.dueDate).toLocaleDateString()}
+            </td>
+            <td style="font-weight: 600;">₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+            <td style="color: #10b981; font-weight: 600;">₹${paid.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+            <td style="font-weight: 700; color: ${balance > 0 ? '#f59e0b' : '#10b981'};">
+              ₹${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+              <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary btn-sm" onclick="viewInvoiceDetails(${inv.id})">
+                  Details
+                </button>
+                <a href="/api/invoices/${inv.id}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="Download PDF">
+                  📥 PDF
+                </a>
+                ${isPayable ? `
+                  <button class="btn btn-primary btn-sm" onclick="initiatePayment(${inv.id})">
+                    Pay Now
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function viewInvoiceDetails(id) {
+      try {
+        const res = await api.get(`/invoices/${id}`);
+        const inv = res.data;
+
+        document.getElementById('modal-inv-number').textContent = `Invoice: ${inv.invoiceNumber}`;
+        document.getElementById('modal-inv-customer').textContent = inv.customer?.companyName || 'N/A';
+        document.getElementById('modal-inv-sub').textContent = inv.subscription?.subscriptionNumber
+          ? `Subscription: ${inv.subscription.subscriptionNumber}`
+          : 'Manual Direct Invoice';
+
+        const isOverdue = inv.isOverdue;
+        const statusBadge = isOverdue
+          ? `<span class="badge badge-overdue">⚠️ OVERDUE</span>`
+          : `<span class="badge badge-${inv.status.toLowerCase().replace(/_/g, '-')}">${inv.status}</span>`;
+        document.getElementById('modal-inv-status').innerHTML = statusBadge;
+        document.getElementById('modal-inv-due').textContent = `Due Date: ${new Date(inv.dueDate).toLocaleDateString()}`;
+
+        // Lines
+        const linesTbody = document.getElementById('modal-inv-lines');
+        linesTbody.innerHTML = (inv.lines || []).map(line => {
+          const title = line.product?.name || line.description || 'Service line';
+          return `
+            <tr>
+              <td>
+                <div style="font-weight: 600;">${title}</div>
+                ${line.productVariant ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${line.productVariant.name}</div>` : ''}
+              </td>
+              <td style="text-align: right;">${line.quantity}</td>
+              <td style="text-align: right;">₹${parseFloat(line.unitPrice).toFixed(2)}</td>
+              <td style="text-align: right;">₹${parseFloat(line.taxAmount || 0).toFixed(2)}</td>
+              <td style="text-align: right; font-weight: 600;">₹${parseFloat(line.totalAmount).toFixed(2)}</td>
+            </tr>
+          `;
+        }).join('');
+
+        // Allocations
+        const allocTbody = document.getElementById('modal-inv-allocations');
+        if (!inv.paymentAllocations || !inv.paymentAllocations.length) {
+          allocTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 12px;">No payments recorded for this invoice yet.</td></tr>`;
+        } else {
+          allocTbody.innerHTML = inv.paymentAllocations.map(a => `
+            <tr>
+              <td style="font-weight: 600; color: #818cf8;">${a.payment?.paymentReference || 'N/A'}</td>
+              <td>${a.payment?.paymentMethod || 'ONLINE'}</td>
+              <td style="color: var(--text-muted);">${new Date(a.allocatedAt || a.payment?.paymentDate).toLocaleDateString()}</td>
+              <td style="text-align: right; font-weight: 600; color: #10b981;">₹${parseFloat(a.allocatedAmount).toFixed(2)}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Actions
+        document.getElementById('modal-inv-pdf-btn').href = `/api/invoices/${inv.id}/pdf`;
+        const payBtn = document.getElementById('modal-inv-pay-btn');
+        const balance = parseFloat(inv.outstandingAmount != null ? inv.outstandingAmount : inv.totalAmount);
+        if (balance > 0 && inv.status !== 'CANCELLED') {
+          payBtn.style.display = 'inline-flex';
+          payBtn.onclick = () => {
+            document.getElementById('inv-modal').classList.remove('open');
+            initiatePayment(inv.id);
+          };
+        } else {
+          payBtn.style.display = 'none';
+        }
+
+        document.getElementById('inv-modal').classList.add('open');
+      } catch (err) {
+        showToast(err.message || 'Failed to load invoice details', 'error');
+      }
+    }
+
+    async function initiatePayment(id) {
+      try {
+        const inv = currentInvoices.find(i => i.id == id) || (await api.get(`/invoices/${id}`)).data;
+        activePayInvoice = inv;
+
+        const total = parseFloat(inv.totalAmount || 0);
+        const bal = parseFloat(inv.outstandingAmount != null ? inv.outstandingAmount : total);
+
+        document.getElementById('pay-inv-number').textContent = inv.invoiceNumber;
+        document.getElementById('pay-total-amount').textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        document.getElementById('pay-balance-due').textContent = `₹${bal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        document.getElementById('pay-amount').value = bal.toFixed(2);
+        document.getElementById('pay-amount').max = bal.toFixed(2);
+
+        const alertBox = document.getElementById('pay-alert');
+        alertBox.className = 'auth-alert';
+        alertBox.textContent = '';
+
+        document.getElementById('pay-modal').classList.add('open');
+      } catch (err) {
+        showToast(err.message || 'Failed to initiate payment', 'error');
+      }
+    }
+
+    async function handlePaymentSubmit(e) {
+      e.preventDefault();
+      if (!activePayInvoice) return;
+
+      const alertBox = document.getElementById('pay-alert');
+      alertBox.className = 'auth-alert';
+      alertBox.textContent = '';
+
+      const amount = parseFloat(document.getElementById('pay-amount').value);
+      if (isNaN(amount) || amount <= 0) {
+        alertBox.textContent = 'Please enter a valid payment amount greater than ₹0.';
+        alertBox.className = 'auth-alert auth-alert-error visible';
+        return;
+      }
+
+      const submitBtn = document.getElementById('submit-pay-btn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Connecting Gateway...';
+
+      try {
+        // Step 1: Create Order via Gateway API
+        const orderRes = await api.post('/payments/create-order', {
+          invoiceId: activePayInvoice.id,
+          customAmount: amount
+        });
+
+        const orderData = orderRes.data;
+
+        // Step 2: Open Razorpay Checkout or Sandbox Simulation
+        if (window.Razorpay && orderData.keyId && orderData.keyId !== 'rzp_test_placeholder') {
+          const options = {
+            key: orderData.keyId,
+            amount: orderData.amount,
+            currency: 'INR',
+            name: 'Brightloop Software',
+            description: `Payment for ${activePayInvoice.invoiceNumber}`,
+            order_id: orderData.orderId,
+            handler: async function (response) {
+              await verifyAndCompletePayment({
+                invoiceId: activePayInvoice.id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              });
+            },
+            prefill: {
+              email: Auth.currentUser?.email || '',
+              contact: Auth.currentUser?.customer?.phone || ''
+            },
+            theme: { color: '#4f46e5' }
+          };
+
+          const rzp = new window.Razorpay(options);
+          rzp.open();
+        } else {
+          // Interactive Sandbox Mode Confirmation (for development / mock keys)
+          const confirmSandbox = confirm(
+            `[Brightloop Gateway Simulation]\n\nAuthorize payment of ₹${amount.toFixed(2)} for ${activePayInvoice.invoiceNumber}?\n\n(Provider Order: ${orderData.orderId})`
+          );
+
+          if (!confirmSandbox) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Proceed to Razorpay Checkout';
+            return;
+          }
+
+          // Complete verification with simulated test signature
+          const mockPaymentId = `pay_${Date.now()}`;
+          await verifyAndCompletePayment({
+            invoiceId: activePayInvoice.id,
+            razorpay_order_id: orderData.orderId,
+            razorpay_payment_id: mockPaymentId,
+            razorpay_signature: 'test_sandbox_signature'
+          });
+        }
+      } catch (err) {
+        alertBox.textContent = err.message || 'Payment initiation failed';
+        alertBox.className = 'auth-alert auth-alert-error visible';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Proceed to Razorpay Checkout';
+      }
+    }
+
+    async function verifyAndCompletePayment(payload) {
+      try {
+        const verifyRes = await api.post('/payments/verify', payload);
+        showToast('Payment completed successfully and allocated to invoice!', 'success');
+        document.getElementById('pay-modal').classList.remove('open');
+        await loadInvoices();
+      } catch (err) {
+        showToast(err.message || 'Payment verification failed', 'error');
+      } finally {
+        const submitBtn = document.getElementById('submit-pay-btn');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Proceed to Razorpay Checkout';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -7,6 +7,7 @@
   <meta name="description" content="Brightloop Staff Operations Portal" />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
 </head>
 <body>
   <div class="dashboard-layout">
@@ -21,17 +22,23 @@
         <a href="/staff/dashboard.html" class="nav-item active">
           <span>📊 Staff Workspace</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Customer listing owned by Member 1 / shared')">
-          <span>🏢 Customer Accounts</span>
-        </a>
-        <a href="#" class="nav-item" onclick="alert('Catalog owned by Member 2')">
+        <a href="/products.html" class="nav-item">
           <span>📦 Products & Plans</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Quotations owned by Member 3')">
-          <span>📑 Quotes & Orders</span>
+        <a href="/quotations.html" class="nav-item">
+          <span>📄 Quotes & Orders</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Billing owned by Member 4')">
+        <a href="/subscriptions.html" class="nav-item">
+          <span>📑 Subscriptions</span>
+        </a>
+        <a href="/invoices.html" class="nav-item">
           <span>💳 Invoices</span>
+        </a>
+        <a href="/payments.html" class="nav-item">
+          <span>💵 Payments</span>
+        </a>
+        <a href="/analytics.html" class="nav-item">
+          <span>📈 Analytics</span>
         </a>
       </nav>
 
@@ -58,24 +65,51 @@
       </header>
 
       <main class="content-container">
-        <div class="stats-grid">
+        <div class="stats-grid" style="margin-bottom: 24px;">
           <div class="stat-card">
             <div class="stat-title">Customer Accounts</div>
             <div id="stat-customers" class="stat-value">--</div>
             <div class="stat-desc">Client organizations under service</div>
           </div>
           <div class="stat-card">
+            <div class="stat-title">Active Subscriptions</div>
+            <div id="stat-active-subs" class="stat-value">--</div>
+            <div class="stat-desc">Currently active software subscriptions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Pending Quotations</div>
+            <div id="stat-pending-quotes" class="stat-value">--</div>
+            <div class="stat-desc">Draft or sent quotations</div>
+          </div>
+          <div class="stat-card">
             <div class="stat-title">Role Privileges</div>
             <div class="stat-value" style="font-size: 1.25rem; color: #60a5fa;">Staff Access</div>
-            <div class="stat-desc">Quotations, catalog view & customer assistance</div>
+            <div class="stat-desc">Quotes, orders, invoices & payments</div>
           </div>
         </div>
 
-        <div class="table-card" style="padding: 24px;">
-          <h2 style="font-size: 1.15rem; margin-bottom: 8px;">Welcome to Staff Operations</h2>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">
-            You are logged in as an authorized Brightloop staff member. Your session is authenticated via secure HTTP-only cookies.
+        <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 8px;">Operational Workflows</h2>
+          <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 20px;">
+            Quick access to everyday business operations across quotations, subscriptions, and billing.
           </p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/quotation-form.html" class="btn btn-primary">
+              <span>+ Create New Quotation</span>
+            </a>
+            <a href="/quotations.html" class="btn btn-secondary">
+              <span>View All Quotations</span>
+            </a>
+            <a href="/subscriptions.html" class="btn btn-secondary">
+              <span>Manage Subscriptions</span>
+            </a>
+            <a href="/invoices.html" class="btn btn-secondary">
+              <span>Process Invoices</span>
+            </a>
+            <a href="/payments.html" class="btn btn-secondary">
+              <span>Record Offline Payment</span>
+            </a>
+          </div>
         </div>
       </main>
     </div>
@@ -91,10 +125,23 @@
       if (!user) return;
 
       try {
-        const res = await api.get('/customers?limit=1');
-        document.getElementById('stat-customers').textContent = res.data.pagination.total;
+        const [custRes, subsRes, quotesRes] = await Promise.all([
+          api.get('/customers?limit=1').catch(() => ({ data: { pagination: { total: 0 } } })),
+          api.get('/subscriptions?limit=100').catch(() => ({ data: { items: [] } })),
+          api.get('/quotations?limit=100').catch(() => ({ data: { items: [] } })),
+        ]);
+
+        document.getElementById('stat-customers').textContent = custRes.data.pagination.total;
+
+        const subs = subsRes.data?.items || [];
+        const activeCount = subs.filter(s => s.status === 'ACTIVE').length;
+        document.getElementById('stat-active-subs').textContent = activeCount;
+
+        const quotes = quotesRes.data?.items || [];
+        const pendingCount = quotes.filter(q => ['DRAFT', 'SENT'].includes(q.status)).length;
+        document.getElementById('stat-pending-quotes').textContent = pendingCount;
       } catch (e) {
-        console.error('Failed to load customers count:', e);
+        console.error('Failed to load operational metrics:', e);
       }
     });
   </script>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quotation Templates — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html" class="active">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Quotation Templates</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="openModal('create-template-modal')">+ New Template</button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Configured Proposal Templates</h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Template Name</th>
+              <th>Linked Plan</th>
+              <th>Default Validity</th>
+              <th>Terms</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="templates-tbody">
+            <tr><td colspan="6" style="text-align: center; color: var(--neutral-500); padding: 32px;">Loading templates...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Template Modal -->
+  <div id="create-template-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Create Quotation Template</h3>
+        <button class="modal-close" onclick="closeModal('create-template-modal')">&times;</button>
+      </div>
+      <form id="template-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Template Name *</label>
+            <input type="text" id="tpl-name" class="form-control" required placeholder="e.g. Standard SaaS Growth Proposal">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default Plan *</label>
+            <select id="tpl-plan-id" class="form-control" required>
+              <option value="">Select plan...</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Default Validity (Days)</label>
+              <input type="number" id="tpl-validity" class="form-control" value="30" min="1">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label">Payment Terms</label>
+              <input type="text" id="tpl-terms" class="form-control" placeholder="e.g. Due upon receipt">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description / Scope Notes</label>
+            <textarea id="tpl-desc" class="form-control" rows="2" placeholder="Standard proposal scope"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('create-template-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Template</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/quotation-templates.js"></script>
+</body>
+</html>
+

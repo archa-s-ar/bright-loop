@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Management — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html" class="active">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Subscription Lifecycle Details</div>
+      <div class="topbar-actions">
+        <a href="subscriptions.html" class="btn btn-secondary">Back to List</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Subscription Banner -->
+      <div class="invoice-header-box">
+        <div>
+          <div style="font-size: 0.85rem; opacity: 0.8; text-transform: uppercase;">Subscription Contract</div>
+          <h2 id="sub-number" style="margin: 4px 0 8px 0;">Loading...</h2>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span id="sub-status-badge" class="badge">ACTIVE</span>
+            <span id="sub-customer-name" style="opacity: 0.9;">Customer</span>
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div id="sub-controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="btn-activate" class="btn btn-success btn-sm" style="display: none;">Activate</button>
+          <button id="btn-pause" class="btn btn-secondary btn-sm" style="display: none;">Pause</button>
+          <button id="btn-resume" class="btn btn-primary btn-sm" style="display: none;">Resume</button>
+          <button id="btn-renew" class="btn btn-secondary btn-sm">Renew Next Cycle</button>
+          <button id="btn-gen-invoice" class="btn btn-primary btn-sm">Generate Invoice Now</button>
+          <button id="btn-close" class="btn btn-danger btn-sm" style="display: none;">Close Contract</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Left: Contract Details & Lines -->
+        <div>
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h3 class="card-title">Plan Details & Contract Inclusions</h3>
+            </div>
+            <div id="sub-plan-desc" style="padding: 16px 0; font-size: 0.95rem; color: var(--neutral-700);">
+              Loading plan details...
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Line Item</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: right;">Unit Price</th>
+                  <th style="text-align: right;">Monthly Rate</th>
+                </tr>
+              </thead>
+              <tbody id="sub-lines-tbody">
+                <tr><td colspan="4" style="text-align: center; color: var(--neutral-500); padding: 16px;">Loading lines...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Invoices issued under this subscription -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Issued Invoices</h3>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="sub-invoices-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--neutral-500); padding: 16px;">No invoices generated yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Lifecycle Dates & Audit History -->
+        <div>
+          <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">Billing Schedule</h3>
+            <div style="font-size: 0.9rem; color: var(--neutral-600); line-height: 2;">
+              <div><strong>Billing Cycle:</strong> <span id="sub-cycle">—</span></div>
+              <div><strong>Start Date:</strong> <span id="sub-start-date">—</span></div>
+              <div><strong>Last Billed Date:</strong> <span id="sub-last-billed">—</span></div>
+              <div><strong>Next Billing Date:</strong> <span id="sub-next-billing" style="color: var(--primary); font-weight: 700;">—</span></div>
+              <div><strong>Payment Terms:</strong> <span id="sub-terms">Due on receipt</span></div>
+            </div>
+          </div>
+
+          <!-- History Timeline -->
+          <div class="card">
+            <h3 style="margin-bottom: 16px;">Lifecycle Audit Trail</h3>
+            <div id="history-timeline" class="timeline">
+              <div style="color: var(--neutral-500); font-size: 0.85rem;">Loading audit history...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/subscription-detail.js"></script>
+</body>
+</html>
+

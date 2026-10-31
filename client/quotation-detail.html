@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quotation Details — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html" class="active">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Quotation Overview</div>
+      <div class="topbar-actions">
+        <a href="quotations.html" class="btn btn-secondary">Back to List</a>
+        <a id="btn-download-pdf" href="#" target="_blank" class="btn btn-secondary">Download PDF</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Header Banner -->
+      <div class="invoice-header-box">
+        <div>
+          <div style="font-size: 0.85rem; opacity: 0.8; text-transform: uppercase;">Quotation Document</div>
+          <h2 id="q-number" style="margin: 4px 0 8px 0;">Loading...</h2>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <span id="q-status-badge" class="badge">DRAFT</span>
+            <span id="q-customer-name" style="opacity: 0.9;">Customer</span>
+          </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div id="action-controls" style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="btn-send" class="btn btn-primary btn-sm" style="display: none;">Send to Customer</button>
+          <button id="btn-accept" class="btn btn-success btn-sm" style="display: none;">Accept Proposal</button>
+          <button id="btn-reject" class="btn btn-danger btn-sm" style="display: none;">Reject</button>
+          <button id="btn-convert" class="btn btn-primary btn-sm" style="display: none;">Convert to Live Subscription</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Left: Line items -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Quoted Inclusions & Line Items</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align: center;">Qty</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Tax</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="quote-lines-tbody">
+              <tr><td colspan="5" style="text-align: center; color: var(--neutral-500); padding: 24px;">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Right: Summary & Meta -->
+        <div>
+          <div class="card summary-card">
+            <h3 style="margin-bottom: 16px;">Financial Breakdown</h3>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="q-subtotal">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Discount</span>
+              <span id="q-discount">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Statutory Tax</span>
+              <span id="q-tax">₹0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Amount</span>
+              <span id="q-total">₹0.00</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h4 style="margin-bottom: 12px;">Dates & Terms</h4>
+            <div style="font-size: 0.9rem; color: var(--neutral-600); line-height: 1.8;">
+              <div><strong>Quotation Date:</strong> <span id="q-date">—</span></div>
+              <div><strong>Expiry Date:</strong> <span id="q-expiry">—</span></div>
+              <div><strong>Linked Subscription:</strong> <span id="q-linked-sub">None</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/quotation-detail.js"></script>
+</body>
+</html>
+

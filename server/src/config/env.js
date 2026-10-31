@@ -23,6 +23,11 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional().default(''),
   EMAIL_FROM: z.string().default('Brightloop Software <no-reply@brightloop.local>'),
   COOKIE_SECRET: z.string().default('brightloop_cookie_secret_key_2026'),
+  // Module 4: Payment Gateway & Billing Engine
+  RAZORPAY_KEY_ID: z.string().optional().default('rzp_test_placeholder_key'),
+  RAZORPAY_KEY_SECRET: z.string().optional().default('rzp_test_placeholder_secret'),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional().default('rzp_test_webhook_secret'),
+  BILLING_CRON_SCHEDULE: z.string().default('0 0 * * *'), // Midnight daily
 });
 
 const parsed = envSchema.safeParse(process.env);

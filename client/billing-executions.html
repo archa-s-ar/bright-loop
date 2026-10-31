@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing Scheduler & Executions — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html" class="active">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Node Cron Active
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Recurring Billing Engine & Execution Logs</div>
+      <div class="topbar-actions">
+        <button id="btn-trigger-cron" class="btn btn-primary" onclick="triggerManualBillingRun()">
+          ⚡ Run Billing Engine Now
+        </button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <h3 class="card-title">Engine Idempotency & Scheduler Status</h3>
+          <span class="badge badge-active">Active (Midnight Daily)</span>
+        </div>
+        <p style="color: var(--neutral-600); font-size: 0.95rem; line-height: 1.6;">
+          The Brightloop recurring engine scans active subscriptions whose next billing date has arrived, generates invoices with immutable tax snapshots, updates renewal dates, and guards against double-billing using database-enforced unique constraints (<code>@@unique([subscriptionId, billingPeriodStart, billingPeriodEnd])</code>).
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Billing Execution History</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadExecutions()">Refresh</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Execution ID</th>
+                <th>Subscription #</th>
+                <th>Customer</th>
+                <th>Billing Period</th>
+                <th>Generated Invoice</th>
+                <th>Attempts</th>
+                <th>Status</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="executions-tbody">
+              <tr><td colspan="8" style="text-align: center; color: var(--neutral-500); padding: 32px;">Loading execution logs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/billing-executions.js"></script>
+</body>
+</html>
+

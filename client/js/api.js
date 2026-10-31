@@ -1,88 +1,47 @@
-
 // client/js/api.js - Brightloop API Client & Utilities
 
 const API_BASE = '/api';
 
 const state = {
   role: localStorage.getItem('brightloop_role') || 'ADMIN',
-  token: localStorage.getItem('brightloop_token') || null
+  token: localStorage.getItem('brightloop_token') || null,
 };
 
 /**
- * Switch role dynamically and request a valid JWT dev token.
+ * Toast Notification Dispatcher
  */
-async function setRole(newRole) {
-  try {
-    const res = await fetch(`${API_BASE}/auth/dev-token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: newRole })
-    });
-    const data = await res.json();
-    if (data.success) {
-      state.role = newRole;
-      state.token = data.token;
-      localStorage.setItem('brightloop_role', newRole);
-      localStorage.setItem('brightloop_token', data.token);
-      showToast(`Switched active role to ${newRole}`, 'info');
-      // Reload current page data if page defines loadData()
-      if (typeof window.loadPageData === 'function') {
-        window.loadPageData();
-      }
-    }
-  } catch (err) {
-    console.error('Failed to switch role:', err);
-    showToast('Failed to generate role token', 'error');
+function showToast(message, type = 'info') {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
   }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span>${message}</span><button style="border:none;background:none;cursor:pointer;font-weight:bold;margin-left:8px;" onclick="this.parentElement.remove()">&times;</button>`;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100%)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 4000);
 }
 
-// Initialize token on first launch if empty
-(async function initAuth() {
-  if (!state.token) {
-    await setRole(state.role);
-  }
-  // Setup role switcher in header if present
-  const select = document.getElementById('global-role-select');
-  if (select) {
-    select.value = state.role;
-    select.addEventListener('change', (e) => setRole(e.target.value));
-  }
-})();
-
 /**
- * Reusable fetch wrapper with automatic JWT authorization headers and error handling.
+ * Modal helpers
  */
-async function request(endpoint, options = {}) {
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.add('active');
+}
 
-  if (state.token) {
-    headers['Authorization'] = `Bearer ${state.token}`;
-  }
-
-  const config = {
-    ...options,
-    headers
-  };
-
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`, config);
-    const data = await response.json();
-
-    if (!response.ok) {
-      const errorMsg = data.errors
-        ? data.errors.map(e => `${e.path}: ${e.message}`).join(', ')
-        : (data.message || 'Request failed');
-      throw new Error(errorMsg);
-    }
-
-    return data;
-  } catch (error) {
-    showToast(error.message, 'error');
-    throw error;
-  }
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.remove('active');
 }
 
 /**
@@ -93,7 +52,7 @@ function formatCurrency(amount) {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   }).format(num);
 }
 
@@ -107,78 +66,58 @@ function formatDate(dateStr) {
 }
 
 /**
- * Toast Notification Dispatcher
+ * Switch role dynamically and request a valid JWT dev token.
  */
-
-// API Client & Notification Helpers
-
-const API_BASE = '/api';
-
-
-function showToast(message, type = 'info') {
-  let container = document.getElementById('toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'toast-container';
-    document.body.appendChild(container);
+async function setRole(newRole) {
+  try {
+    const res = await fetch(`${API_BASE}/auth/dev-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: newRole }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      state.role = newRole;
+      state.token = data.token;
+      localStorage.setItem('brightloop_role', newRole);
+      localStorage.setItem('brightloop_token', data.token);
+      showToast(`Switched active role to ${newRole}`, 'info');
+      if (typeof window.loadPageData === 'function') {
+        window.loadPageData();
+      }
+    }
+  } catch (err) {
+    console.error('Failed to switch role:', err);
   }
-
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-
-  toast.innerHTML = `<span>${message}</span><button style="border:none;background:none;cursor:pointer;font-weight:bold;margin-left:8px;" onclick="this.parentElement.remove()">&times;</button>`;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 4000);
 }
 
-// Modal helper
-function openModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.classList.add('active');
-}
+// Initialize dev token if needed
+(async function initAuth() {
+  const select = document.getElementById('global-role-select');
+  if (select) {
+    select.value = state.role;
+    select.addEventListener('change', (e) => setRole(e.target.value));
+  }
+})();
 
-function closeModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.classList.remove('active');
-}
-
-window.api = {
-  request,
-  setRole,
-  formatCurrency,
-  formatDate,
-  showToast,
-  openModal,
-  closeModal,
-  getRole: () => state.role
-};
-
-
-  toast.innerHTML = `<span>${message}</span>`;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(100%)';
-    toast.style.transition = 'all 0.3s ease';
-    setTimeout(() => toast.remove(), 300);
-  }, 4000);
-}
-
+/**
+ * Reusable fetch wrapper with automatic JWT authorization headers and error handling.
+ */
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
   const defaultHeaders = {
     'Content-Type': 'application/json',
   };
 
+  if (state.token) {
+    defaultHeaders['Authorization'] = `Bearer ${state.token}`;
+  }
+
   const config = {
     ...options,
     method: options.method || 'GET',
-    headers: { ...defaultHeaders, ...options.headers },
-    credentials: options.credentials || 'include', // Guarantees HTTP-only cookie exchange
+    headers: { ...defaultHeaders, ...(options.headers || {}) },
+    credentials: options.credentials || 'include',
   };
 
   if (config.body && typeof config.body === 'object') {
@@ -192,11 +131,12 @@ async function apiRequest(endpoint, options = {}) {
     if (!response.ok) {
       const errorMessage =
         data?.message ||
-        (data?.errors && data.errors.map((e) => e.message).join(', ')) ||
+        (data?.errors && data.errors.map((e) => `${e.field || e.path || ''}: ${e.message}`).join(', ')) ||
         `Request failed with status ${response.status}`;
       const error = new Error(errorMessage);
       error.status = response.status;
       error.data = data;
+      showToast(errorMessage, 'error');
       throw error;
     }
 
@@ -207,12 +147,21 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 const api = {
+  request: apiRequest,
   get: (endpoint, headers) => apiRequest(endpoint, { method: 'GET', headers }),
   post: (endpoint, body, headers) => apiRequest(endpoint, { method: 'POST', body, headers }),
   patch: (endpoint, body, headers) => apiRequest(endpoint, { method: 'PATCH', body, headers }),
   delete: (endpoint, headers) => apiRequest(endpoint, { method: 'DELETE', headers }),
+  setRole,
+  getRole: () => state.role,
+  formatCurrency,
+  formatDate,
+  showToast,
+  openModal,
+  closeModal,
 };
 
 window.api = api;
 window.showToast = showToast;
-
+window.formatCurrency = formatCurrency;
+window.formatDate = formatDate;

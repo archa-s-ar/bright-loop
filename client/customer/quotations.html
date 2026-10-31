@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Quotations — Customer Portal | Brightloop</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/customer/dashboard.html" class="nav-item">
+          <span>🏢 Account Overview</span>
+        </a>
+        <a href="/customer/quotations.html" class="nav-item active">
+          <span>📄 My Quotations</span>
+        </a>
+        <a href="/customer/subscriptions.html" class="nav-item">
+          <span>📑 My Subscriptions</span>
+        </a>
+        <a href="/customer/invoices.html" class="nav-item">
+          <span>💳 Invoices & Payments</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">C</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Customer User</div>
+            <span id="user-role-badge" class="badge badge-customer">CUSTOMER</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Price Quotations & Proposals</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Search and Filter Bar -->
+        <div class="table-card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <input
+                type="text"
+                id="search-input"
+                class="form-control"
+                placeholder="Search by quote number..."
+              />
+            </div>
+            <div style="width: 180px;">
+              <select id="status-filter" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="SENT">SENT (Pending Action)</option>
+                <option value="ACCEPTED">ACCEPTED</option>
+                <option value="CONVERTED">CONVERTED</option>
+                <option value="REJECTED">REJECTED</option>
+                <option value="EXPIRED">EXPIRED</option>
+              </select>
+            </div>
+            <button id="refresh-btn" class="btn btn-secondary btn-sm">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Quotations Table -->
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="table" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Quotation #</th>
+                  <th>Created Date</th>
+                  <th>Valid Until</th>
+                  <th>Items</th>
+                  <th>Total (INR)</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quotations-tbody">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                    Loading your quotations...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Review Quotation Modal -->
+  <div id="quote-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 id="modal-quote-number" style="font-size: 1.2rem;">Quotation Details</h3>
+        <button id="close-quote-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+        <!-- Quote Info Header -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle);">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Quotation For</div>
+            <div id="modal-customer-name" style="font-weight: 700; font-size: 1.1rem; margin-top: 2px;">--</div>
+            <div id="modal-customer-email" style="font-size: 0.85rem; color: var(--text-muted);">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
+            <div id="modal-quote-status" style="margin-top: 4px;">--</div>
+            <div id="modal-quote-dates" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">--</div>
+          </div>
+        </div>
+
+        <!-- Line Items -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Quotation Line Items</h4>
+        <div class="table-responsive" style="margin-bottom: 20px;">
+          <table class="table" style="width: 100%; font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>Item / Description</th>
+                <th style="text-align: right;">Qty</th>
+                <th style="text-align: right;">Unit Price</th>
+                <th style="text-align: right;">Discount</th>
+                <th style="text-align: right;">Tax</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="modal-lines-tbody">
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totals Summary -->
+        <div style="background: var(--surface-secondary, rgba(255,255,255,0.03)); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px; margin-left: auto; max-width: 320px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+            <span>Subtotal:</span>
+            <span id="modal-subtotal" style="font-weight: 600;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+            <span>Tax Total:</span>
+            <span id="modal-tax-total" style="font-weight: 600;">₹0.00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: #10b981;">
+            <span>Discount:</span>
+            <span id="modal-discount-total">- ₹0.00</span>
+          </div>
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 8px 0;" />
+          <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 700;">
+            <span>Grand Total:</span>
+            <span id="modal-grand-total" style="color: #818cf8;">₹0.00</span>
+          </div>
+        </div>
+
+        <div id="modal-action-bar" style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+          <!-- dynamically populated accept / reject buttons -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    let currentQuotations = [];
+    let selectedQuote = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['CUSTOMER']);
+      if (!user) return;
+
+      loadQuotations();
+
+      document.getElementById('search-input').addEventListener('input', filterAndRender);
+      document.getElementById('status-filter').addEventListener('change', loadQuotations);
+      document.getElementById('refresh-btn').addEventListener('click', loadQuotations);
+
+      // Modal Close
+      const modal = document.getElementById('quote-modal');
+      const closeBtn = document.getElementById('close-quote-modal-btn');
+      closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    });
+
+    async function loadQuotations() {
+      const status = document.getElementById('status-filter').value;
+      const tbody = document.getElementById('quotations-tbody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">Loading your quotations...</td></tr>`;
+
+      try {
+        let url = '/quotations?limit=100';
+        if (status) url += `&status=${status}`;
+
+        const res = await api.get(url);
+        currentQuotations = res.data?.items || [];
+        filterAndRender();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 24px;">Failed to load quotations: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterAndRender() {
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const filtered = currentQuotations.filter(q => {
+        return !search || q.quotationNumber.toLowerCase().includes(search);
+      });
+
+      renderQuotations(filtered);
+    }
+
+    function renderQuotations(items) {
+      const tbody = document.getElementById('quotations-tbody');
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">No quotations found matching your criteria.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(q => {
+        const statusBadge = `<span class="badge badge-${q.status.toLowerCase()}">${q.status}</span>`;
+        const total = parseFloat(q.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const validUntil = q.validUntil ? new Date(q.validUntil).toLocaleDateString() : 'N/A';
+        const isActionable = ['SENT', 'DRAFT'].includes(q.status);
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: #818cf8;">${q.quotationNumber}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(q.createdAt).toLocaleDateString()}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${validUntil}</td>
+            <td style="font-size: 0.85rem;">${q._count?.lines || 0} line(s)</td>
+            <td style="font-weight: 700;">₹${total}</td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+              <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                <button class="btn btn-secondary btn-sm" onclick="viewQuotationDetails(${q.id})">
+                  Review
+                </button>
+                <a href="/api/quotations/${q.id}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="Download PDF">
+                  📥 PDF
+                </a>
+                ${isActionable ? `
+                  <button class="btn btn-primary btn-sm" onclick="acceptQuotationDirect(${q.id}, '${q.quotationNumber}')">
+                    Accept
+                  </button>
+                ` : ''}
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function viewQuotationDetails(id) {
+      try {
+        const res = await api.get(`/quotations/${id}`);
+        selectedQuote = res.data;
+        renderModalDetails(selectedQuote);
+      } catch (err) {
+        showToast(err.message || 'Failed to fetch quotation details', 'error');
+      }
+    }
+
+    function renderModalDetails(q) {
+      const modal = document.getElementById('quote-modal');
+      document.getElementById('modal-quote-number').textContent = `Quotation: ${q.quotationNumber}`;
+      document.getElementById('modal-customer-name').textContent = q.customer?.companyName || 'N/A';
+      document.getElementById('modal-customer-email').textContent = q.customer?.email || '';
+      document.getElementById('modal-quote-status').innerHTML = `<span class="badge badge-${q.status.toLowerCase()}">${q.status}</span>`;
+      document.getElementById('modal-quote-dates').textContent = `Valid Until: ${q.validUntil ? new Date(q.validUntil).toLocaleDateString() : 'N/A'}`;
+
+      // Render lines
+      const tbody = document.getElementById('modal-lines-tbody');
+      tbody.innerHTML = (q.lines || []).map(line => {
+        const title = line.product?.name || line.description || 'Custom Item';
+        return `
+          <tr>
+            <td>
+              <div style="font-weight: 600;">${title}</div>
+              ${line.productVariant ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${line.productVariant.name}</div>` : ''}
+            </td>
+            <td style="text-align: right;">${line.quantity}</td>
+            <td style="text-align: right;">₹${parseFloat(line.unitPrice).toFixed(2)}</td>
+            <td style="text-align: right; color: #10b981;">₹${parseFloat(line.discountAmount || 0).toFixed(2)}</td>
+            <td style="text-align: right;">₹${parseFloat(line.taxAmount || 0).toFixed(2)}</td>
+            <td style="text-align: right; font-weight: 600;">₹${parseFloat(line.totalAmount).toFixed(2)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('modal-subtotal').textContent = `₹${parseFloat(q.subtotalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('modal-tax-total').textContent = `₹${parseFloat(q.taxAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('modal-discount-total').textContent = `- ₹${parseFloat(q.discountAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('modal-grand-total').textContent = `₹${parseFloat(q.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+
+      // Action buttons
+      const isActionable = ['SENT', 'DRAFT'].includes(q.status);
+      const actionBar = document.getElementById('modal-action-bar');
+      actionBar.innerHTML = `
+        <a href="/api/quotations/${q.id}/pdf" target="_blank" class="btn btn-secondary">
+          📥 Download PDF Copy
+        </a>
+        ${isActionable ? `
+          <button class="btn btn-danger" onclick="rejectQuotation(${q.id})">
+            Reject Quotation
+          </button>
+          <button class="btn btn-primary" onclick="acceptQuotation(${q.id})">
+            Accept & Proceed
+          </button>
+        ` : ''}
+      `;
+
+      modal.classList.add('open');
+    }
+
+    async function acceptQuotationDirect(id, num) {
+      if (!confirm(`Are you sure you want to accept Quotation ${num}?`)) return;
+      try {
+        await api.post(`/quotations/${id}/accept`);
+        showToast(`Quotation ${num} accepted successfully!`, 'success');
+        loadQuotations();
+      } catch (err) {
+        showToast(err.message || 'Failed to accept quotation', 'error');
+      }
+    }
+
+    async function acceptQuotation(id) {
+      if (!confirm('Confirm acceptance of this quotation? This confirms your agreement to the stated pricing.')) return;
+      try {
+        await api.post(`/quotations/${id}/accept`);
+        showToast('Quotation accepted! The Brightloop operations team will activate your subscription.', 'success');
+        document.getElementById('quote-modal').classList.remove('open');
+        loadQuotations();
+      } catch (err) {
+        showToast(err.message || 'Failed to accept quotation', 'error');
+      }
+    }
+
+    async function rejectQuotation(id) {
+      const reason = prompt('Please provide a brief reason for declining (optional):');
+      if (reason === null) return;
+      try {
+        await api.post(`/quotations/${id}/reject`, { reason });
+        showToast('Quotation declined.', 'info');
+        document.getElementById('quote-modal').classList.remove('open');
+        loadQuotations();
+      } catch (err) {
+        showToast(err.message || 'Failed to reject quotation', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,236 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brightloop — Product Catalog & Pricing Dashboard</title>
-  <link rel="stylesheet" href="css/main.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <a href="index.html" class="sidebar-brand">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-      Bright<span>loop</span>
-    </a>
-    <ul class="sidebar-nav">
-      <li><a href="index.html" class="active">📊 Overview</a></li>
-      <li><a href="products.html">📦 Product Catalog</a></li>
-      <li><a href="plans.html">📑 Subscription Plans</a></li>
-      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
-      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
-    </ul>
-    <div class="sidebar-footer">
-      Module 2: Catalog & Pricing<br>
-      Branch: <strong>pricing</strong>
-    </div>
-  </aside>
-
-  <!-- Main Wrapper -->
-  <div class="main-wrapper">
-    <header class="topbar">
-      <div class="topbar-title">Catalog & Pricing Dashboard</div>
-      <div class="topbar-actions">
-        <div class="role-switcher">
-          <span>Active Role:</span>
-          <select id="global-role-select" class="role-select">
-            <option value="ADMIN">ADMIN</option>
-            <option value="STAFF">STAFF</option>
-            <option value="CUSTOMER">CUSTOMER</option>
-          </select>
-        </div>
-      </div>
-    </header>
-
-    <main class="content-container">
-      <!-- Metric Cards -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Total Products</div>
-          <div class="stat-value" id="stat-products">0</div>
-          <div class="stat-sub">Active catalog offerings</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Subscription Plans</div>
-          <div class="stat-value" id="stat-plans">0</div>
-          <div class="stat-sub">Fixed & Itemized bundles</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Tax Rules</div>
-          <div class="stat-value" id="stat-taxes">0</div>
-          <div class="stat-sub">GST & statutory rules</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Active Discounts</div>
-          <div class="stat-value" id="stat-discounts">0</div>
-          <div class="stat-sub">Promotional & volume tiers</div>
-        </div>
-      </div>
-
-      <!-- Charts & Visual Overview -->
-      <div class="form-row">
-        <div class="card" style="flex: 1;">
-          <div class="card-header">
-            <h3 class="card-title">Plan Pricing Mode Distribution</h3>
-          </div>
-          <div style="height: 260px; display: flex; align-items: center; justify-content: center;">
-            <canvas id="planChart"></canvas>
-          </div>
-        </div>
-
-        <div class="card" style="flex: 1;">
-          <div class="card-header">
-            <h3 class="card-title">Products by Category</h3>
-          </div>
-          <div style="height: 260px; display: flex; align-items: center; justify-content: center;">
-            <canvas id="productChart"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Actions & Integration Summary -->
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Pricing Engine Status & Cross-Module Services</h3>
-          <span class="badge badge-active">Operational</span>
-        </div>
-        <p style="color: var(--neutral-600); margin-bottom: 16px;">
-          Module 2 exposes high-precision, Decimal-safe calculation contracts consumed across Brightloop:
-        </p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-          <div style="border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 14px; background: var(--neutral-50);">
-            <strong>Quotation Calculation (Member 3)</strong>
-            <p style="font-size: 0.85rem; color: var(--neutral-600); margin-top: 4px;">
-              <code>calculatePlanPrice(planId)</code> evaluates FIXED bundle pricing without double-counting products, or computes ITEMIZED line sums.
-            </p>
-          </div>
-          <div style="border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 14px; background: var(--neutral-50);">
-            <strong>Tax Snapshots (Member 4)</strong>
-            <p style="font-size: 0.85rem; color: var(--neutral-600); margin-top: 4px;">
-              <code>calculateProductTaxes(productId, amount)</code> determines applicable active taxes within validity dates for invoice line snapshotting.
-            </p>
-          </div>
-          <div style="border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); padding: 14px; background: var(--neutral-50);">
-            <strong>Discount Validation Engine</strong>
-            <p style="font-size: 0.85rem; color: var(--neutral-600); margin-top: 4px;">
-              <code>validateDiscountEligibility(params)</code> validates date windows, minimum amounts, qualifying products, and usage limits.
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <div id="toast-container"></div>
-  <script src="js/api.js"></script>
-  <script>
-    let planChartInstance = null;
-    let productChartInstance = null;
-
-    async function loadPageData() {
-      try {
-        const [prodRes, planRes, taxRes, discRes] = await Promise.all([
-          api.request('/products?limit=100'),
-          api.request('/plans'),
-          api.request('/taxes'),
-          api.request('/discounts').catch(() => ({ data: [] }))
-        ]);
-
-        const products = prodRes.products || [];
-        const plans = planRes.data || [];
-        const taxes = taxRes.data || [];
-        const discounts = discRes.data || [];
-
-        document.getElementById('stat-products').innerText = prodRes.pagination?.total || products.length;
-        document.getElementById('stat-plans').innerText = plans.length;
-        document.getElementById('stat-taxes').innerText = taxes.length;
-        document.getElementById('stat-discounts').innerText = discounts.length;
-
-        // Render Plan Mode Chart
-        const fixedCount = plans.filter(p => p.pricingMode === 'FIXED').length;
-        const itemizedCount = plans.filter(p => p.pricingMode === 'ITEMIZED').length;
-
-        const ctxPlan = document.getElementById('planChart').getContext('2d');
-        if (planChartInstance) planChartInstance.destroy();
-        planChartInstance = new Chart(ctxPlan, {
-          type: 'doughnut',
-          data: {
-            labels: ['FIXED Bundles', 'ITEMIZED Plans'],
-            datasets: [{
-              data: [fixedCount || 1, itemizedCount || 0],
-              backgroundColor: ['#818cf8', '#38bdf8']
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } }
-          }
-        });
-
-        // Render Products by Category Chart
-        const typeMap = {};
-        products.forEach(p => {
-          typeMap[p.productType] = (typeMap[p.productType] || 0) + 1;
-        });
-
-        const ctxProd = document.getElementById('productChart').getContext('2d');
-        if (productChartInstance) productChartInstance.destroy();
-        productChartInstance = new Chart(ctxProd, {
-          type: 'bar',
-          data: {
-            labels: Object.keys(typeMap).length ? Object.keys(typeMap) : ['No Data'],
-            datasets: [{
-              label: 'Products Count',
-              data: Object.values(typeMap).length ? Object.values(typeMap) : [0],
-              backgroundColor: '#4f46e5'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
-          }
-        });
-
-      } catch (err) {
-        console.error('Failed to load dashboard data:', err);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadPageData);
-    window.loadPageData = loadPageData;
-  </script>
-</body>
-</html>
-
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brightloop — Subscription Management System</title>
-  <meta http-equiv="refresh" content="0; url=/login.html" />
   <link rel="stylesheet" href="/css/style.css" />
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const user = await Auth.checkSession();
-      if (user) {
-        window.location.href = Auth.getDashboardPath(user.role);
-      } else {
+      try {
+        const user = await Auth.checkSession();
+        if (user && user.role) {
+          window.location.href = Auth.getDashboardPath(user.role);
+        } else {
+          window.location.href = '/login.html';
+        }
+      } catch (err) {
         window.location.href = '/login.html';
       }
     });
   </script>
 </head>
-<body style="display: flex; align-items: center; justify-content: center; height: 100vh;">
-  <div style="text-align: center; color: var(--text-muted);">
-    <div class="auth-brand-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin: 0 auto 16px;">B</div>
-    <p>Loading Brightloop Subscription Management System...</p>
+<body style="display: flex; align-items: center; justify-content: center; height: 100vh; background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif;">
+  <div style="text-align: center;">
+    <div class="auth-brand-icon" style="width: 52px; height: 52px; font-size: 1.6rem; margin: 0 auto 16px; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 800;">
+      B
+    </div>
+    <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 8px;">Brightloop</h2>
+    <p style="color: #94a3b8; font-size: 0.95rem;">Loading Subscription & Billing Management System...</p>
   </div>
 </body>
 </html>
-
