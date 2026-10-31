@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Portal — Brightloop</title>
+  <meta name="description" content="Manage your company's Brightloop software subscriptions and invoices." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/customer/dashboard.html" class="nav-item active">
+          <span>🏢 Account Overview</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Subscription portal owned by Member 3')">
+          <span>📑 My Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Invoicing portal owned by Member 4')">
+          <span>💳 Invoices & Payments</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">C</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Customer User</div>
+            <span id="user-role-badge" class="badge badge-customer">CUSTOMER</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Customer Organization Portal</h1>
+        <div class="topbar-actions">
+          <button id="open-change-pw-btn" class="btn btn-secondary btn-sm">
+            <span>Change Password</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Customer Organization Profile Card -->
+        <div class="table-card" style="padding: 28px; margin-bottom: 28px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <span class="badge badge-customer" style="margin-bottom: 8px;">Organization Profile</span>
+              <h2 id="org-company-name" style="font-size: 1.5rem; margin-top: 4px;">Loading organization...</h2>
+              <p id="org-email" style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">--</p>
+            </div>
+            <div>
+              <span id="org-currency" class="badge" style="background: rgba(79, 70, 229, 0.2); color: #818cf8; font-size: 0.85rem; padding: 6px 14px;">
+                Currency: INR
+              </span>
+            </div>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid var(--border-subtle); margin: 20px 0;" />
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-faint); text-transform: uppercase; font-weight: 600;">Tax / GST ID</div>
+              <div id="org-tax-id" style="font-size: 0.95rem; font-weight: 600; margin-top: 4px;">--</div>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-faint); text-transform: uppercase; font-weight: 600;">Phone Number</div>
+              <div id="org-phone" style="font-size: 0.95rem; font-weight: 600; margin-top: 4px;">--</div>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-faint); text-transform: uppercase; font-weight: 600;">Billing Address</div>
+              <div id="org-address" style="font-size: 0.95rem; margin-top: 4px; color: var(--text-main);">--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Integration Shells -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <div class="table-card" style="padding: 24px;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Active Subscriptions</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+              View software plans and upcoming renewals managed by Member 3.
+            </p>
+            <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted);">
+              Integrated with Member 3 module
+            </span>
+          </div>
+
+          <div class="table-card" style="padding: 24px;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Invoices & Payments</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+              Download tax invoice PDFs and pay outstanding balances managed by Member 4.
+            </p>
+            <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted);">
+              Integrated with Member 4 module
+            </span>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div id="password-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size: 1.15rem;">Change Account Password</h3>
+        <button id="close-pw-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div id="pw-modal-alert" class="auth-alert auth-alert-error" style="margin-bottom: 16px;"></div>
+
+      <form id="change-pw-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="current-pw">Current Password *</label>
+          <input
+            type="password"
+            id="current-pw"
+            class="form-control"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="new-pw">New Password *</label>
+          <input
+            type="password"
+            id="new-pw"
+            class="form-control"
+            placeholder="At least 9 characters"
+            required
+            autocomplete="new-password"
+          />
+          <span class="form-hint">Must include uppercase, lowercase, and special character.</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancel-pw-btn" class="btn btn-secondary">
+            Cancel
+          </button>
+          <button type="submit" id="save-pw-btn" class="btn btn-primary">
+            Update Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['CUSTOMER']);
+      if (!user) return;
+
+      if (user.customer) {
+        document.getElementById('org-company-name').textContent = user.customer.companyName || 'My Organization';
+        document.getElementById('org-email').textContent = user.customer.email || user.email;
+        document.getElementById('org-currency').textContent = `Currency: ${user.customer.currency || 'INR'}`;
+        document.getElementById('org-tax-id').textContent = user.customer.taxRegistrationNumber || 'Not provided';
+        document.getElementById('org-phone').textContent = user.customer.phone || 'Not provided';
+        document.getElementById('org-address').textContent = user.customer.billingAddress || 'Not provided';
+      }
+
+      // Password Modal Handlers
+      const pwModal = document.getElementById('password-modal');
+      const openPwBtn = document.getElementById('open-change-pw-btn');
+      const closePwBtn = document.getElementById('close-pw-modal-btn');
+      const cancelPwBtn = document.getElementById('cancel-pw-btn');
+      const pwForm = document.getElementById('change-pw-form');
+      const pwAlert = document.getElementById('pw-modal-alert');
+      const savePwBtn = document.getElementById('save-pw-btn');
+
+      openPwBtn.addEventListener('click', () => {
+        pwAlert.className = 'auth-alert';
+        pwAlert.textContent = '';
+        pwForm.reset();
+        pwModal.classList.add('open');
+      });
+
+      const closeModal = () => pwModal.classList.remove('open');
+      closePwBtn.addEventListener('click', closeModal);
+      cancelPwBtn.addEventListener('click', closeModal);
+
+      pwForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        pwAlert.className = 'auth-alert';
+
+        const currentPassword = document.getElementById('current-pw').value;
+        const newPassword = document.getElementById('new-pw').value;
+
+        if (!currentPassword || !newPassword) {
+          pwAlert.textContent = 'Please fill in both current and new password';
+          pwAlert.className = 'auth-alert auth-alert-error visible';
+          return;
+        }
+
+        savePwBtn.disabled = true;
+        savePwBtn.textContent = 'Updating...';
+
+        try {
+          await api.post('/auth/change-password', { currentPassword, newPassword });
+          showToast('Password updated successfully!', 'success');
+          closeModal();
+        } catch (err) {
+          pwAlert.textContent = err.message || 'Failed to update password';
+          pwAlert.className = 'auth-alert auth-alert-error visible';
+        } finally {
+          savePwBtn.disabled = false;
+          savePwBtn.textContent = 'Update Password';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

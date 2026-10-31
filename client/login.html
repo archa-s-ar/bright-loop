@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Brightloop Subscription Management</title>
+  <meta name="description" content="Sign in to your Brightloop subscription management account." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-brand">
+          <div class="auth-brand-icon">B</div>
+          <span>Brightloop</span>
+        </div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to manage your subscriptions and billing</p>
+      </div>
+
+      <div id="auth-alert" class="auth-alert auth-alert-error" role="alert"></div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="email">Business Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            placeholder="name@company.com"
+            required
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            placeholder="••••••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div class="auth-links">
+          <span></span>
+          <a href="/forgot-password.html">Forgot password?</a>
+        </div>
+
+        <button type="submit" id="login-btn" class="btn btn-primary btn-block">
+          <span>Sign In</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account?
+        <a href="/register.html">Register Customer Organization</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/pages/login.js"></script>
+</body>
+</html>

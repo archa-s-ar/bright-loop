@@ -1,0 +1,284 @@
+/* Brightloop Subscription Management System — Global Design System */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Color Palette */
+  --bg-main: #090d16;
+  --bg-surface: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --bg-card-hover: rgba(30, 41, 59, 0.95);
+  --bg-input: rgba(15, 23, 42, 0.8);
+  --border-subtle: rgba(148, 163, 184, 0.12);
+  --border-focus: #6366f1;
+  --border-hover: rgba(148, 163, 184, 0.25);
+
+  /* Primary Brand Accents */
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  --accent-cyan: #06b6d4;
+  --accent-purple: #8b5cf6;
+
+  /* Semantic Feedback */
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.12);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.12);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.12);
+  --info: #3b82f6;
+  --info-bg: rgba(59, 130, 246, 0.12);
+
+  /* Typography */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Shadows & Glassmorphism */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px rgba(79, 70, 229, 0.35);
+  --glass-blur: blur(16px);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(79, 70, 229, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+  background-attachment: fixed;
+}
+
+a {
+  color: #818cf8;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: #a5b4fc;
+}
+
+/* Base Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition);
+  font-family: inherit;
+  outline: none;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.8);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: var(--border-hover);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  outline: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  background: rgba(15, 23, 42, 0.95);
+}
+
+.form-control::placeholder {
+  color: var(--text-faint);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-faint);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badge-admin {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.badge-staff {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-customer {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-active {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.badge-inactive {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* Toast Container */
+#toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 380px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--text-main);
+  font-size: 0.875rem;
+  animation: slideIn 0.3s ease forwards;
+}
+
+.toast-success {
+  border-left: 4px solid var(--success);
+}
+
+.toast-error {
+  border-left: 4px solid var(--danger);
+}
+
+.toast-info {
+  border-left: 4px solid var(--info);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
