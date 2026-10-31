@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tax Rules Configuration — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Product Catalog</a></li>
+      <li><a href="plans.html">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html" class="active">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Tax Rules & Applicability</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Active Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+        <button onclick="openTaxModal()" class="btn btn-primary admin-only">+ Add Tax Rule</button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Tax Rules Table -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Configured Statutory Tax Rules</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Statutory GST and regulatory rules applied to products and recurring invoice lines.
+            </p>
+          </div>
+          <span id="taxes-count-badge" class="badge badge-fixed">Loading...</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tax Rule Name</th>
+                <th>Rate (%)</th>
+                <th>Effective Window</th>
+                <th>Products Linked</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taxes-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--neutral-400); padding: 32px;">Loading tax rules...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Reusable Tax Calculation Sandbox for Member 4 Testing -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Tax Engine Simulator (Billing Integration Preview)</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Simulates Member 4's invoice line snapshot evaluation: <code>calculateProductTaxes(productId, amount)</code>.
+            </p>
+          </div>
+          <span class="badge badge-itemized">Live Test</span>
+        </div>
+
+        <div class="form-row" style="align-items: flex-end;">
+          <div class="form-group" style="flex: 2;">
+            <label class="form-label" for="sim-product">Select Product</label>
+            <select id="sim-product" class="form-control">
+              <option value="">Loading products...</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="sim-amount">Taxable Base Amount (INR)</label>
+            <input type="number" id="sim-amount" class="form-control" value="1000.00" step="0.01">
+          </div>
+          <div class="form-group">
+            <button id="run-tax-sim-btn" class="btn btn-primary" style="height: 40px;">Evaluate Taxes</button>
+          </div>
+        </div>
+
+        <div id="sim-results-box" class="pricing-box" style="display: none;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;">Applicable Tax Snapshot Breakdown</h4>
+          <div id="sim-tax-lines"></div>
+          <div class="pricing-row total">
+            <span>Total Calculated Tax:</span>
+            <span id="sim-total-tax" style="color: var(--primary);">₹0.00</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Tax Modal -->
+  <div id="tax-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="tax-modal-title">New Tax Rule</h3>
+        <button class="modal-close" onclick="api.closeModal('tax-modal')">&times;</button>
+      </div>
+      <form id="tax-form">
+        <div class="modal-body">
+          <input type="hidden" id="tax-id">
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label class="form-label" for="tax-name">Tax Rule Name *</label>
+              <input type="text" id="tax-name" class="form-control" placeholder="e.g. GST - 18%, CGST (9%), SGST (9%)" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="tax-rate">Tax Rate (%) *</label>
+              <input type="number" id="tax-rate" class="form-control" step="0.01" min="0" max="100" placeholder="18.00" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tax-description">Description</label>
+            <input type="text" id="tax-description" class="form-control" placeholder="Statutory classification and applicability notes...">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="tax-effective-from">Effective From *</label>
+              <input type="date" id="tax-effective-from" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="tax-effective-until">Effective Until (Optional)</label>
+              <input type="date" id="tax-effective-until" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="tax-active" checked>
+              <span style="font-weight: 500; font-size: 0.9rem;">Rule is Active</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="api.closeModal('tax-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Tax Rule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    let productsList = [];
+
+    async function loadPageData() {
+      try {
+        const [taxRes, prodRes] = await Promise.all([
+          api.request('/taxes'),
+          api.request('/products?limit=200')
+        ]);
+
+        renderTaxes(taxRes.data || []);
+        productsList = prodRes.products || [];
+        populateProductSimulator(productsList);
+      } catch (err) {
+        console.error('Error fetching taxes:', err);
+      }
+    }
+
+    function renderTaxes(taxes) {
+      const tbody = document.getElementById('taxes-table-body');
+      const badge = document.getElementById('taxes-count-badge');
+      badge.innerText = `${taxes.length} Rules`;
+
+      if (taxes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--neutral-500); padding: 32px;">No tax rules found. Click "+ Add Tax Rule" to create one.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = taxes.map(t => {
+        const pct = (parseFloat(t.taxRate) * 100).toFixed(2);
+        const windowStr = `${api.formatDate(t.effectiveFrom)} → ${t.effectiveUntil ? api.formatDate(t.effectiveUntil) : 'Ongoing'}`;
+        const prodCount = t._count?.productTaxRules || 0;
+
+        return `
+          <tr>
+            <td>
+              <strong>${t.name}</strong>
+              ${t.description ? `<div style="font-size:0.8rem; color: var(--neutral-500);">${t.description}</div>` : ''}
+            </td>
+            <td><strong>${pct}%</strong></td>
+            <td>${windowStr}</td>
+            <td>${prodCount} product${prodCount === 1 ? '' : 's'}</td>
+            <td><span class="badge ${t.isActive ? 'badge-active' : 'badge-inactive'}">${t.isActive ? 'ACTIVE' : 'INACTIVE'}</span></td>
+            <td style="text-align: right;">
+              <button onclick="editTaxRule(${t.id}, '${t.name}', ${t.taxRate}, '${t.description || ''}', '${t.effectiveFrom}', '${t.effectiveUntil || ''}', ${t.isActive})" class="btn btn-secondary btn-sm admin-only">Edit</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populateProductSimulator(products) {
+      const select = document.getElementById('sim-product');
+      if (products.length === 0) {
+        select.innerHTML = '<option value="">No products available</option>';
+        return;
+      }
+      select.innerHTML = products.map(p =>
+        `<option value="${p.id}" ${p.productTaxRules?.length ? 'style="font-weight:bold;"' : ''}>${p.name} (${p.productTaxRules?.length || 0} tax rules attached)</option>`
+      ).join('');
+    }
+
+    document.getElementById('run-tax-sim-btn').addEventListener('click', async () => {
+      const productId = document.getElementById('sim-product').value;
+      const amount = parseFloat(document.getElementById('sim-amount').value) || 0;
+
+      if (!productId) {
+        api.showToast('Please select a product to evaluate', 'error');
+        return;
+      }
+
+      try {
+        const res = await api.request(`/taxes/calculate?productId=${productId}&taxableAmount=${amount}`);
+        const data = res.data;
+
+        const resultsBox = document.getElementById('sim-results-box');
+        const linesDiv = document.getElementById('sim-tax-lines');
+        resultsBox.style.display = 'block';
+
+        if (data.taxes.length === 0) {
+          linesDiv.innerHTML = '<p style="color: var(--neutral-500); font-size: 0.9rem;">No active tax rules attached to this product.</p>';
+        } else {
+          linesDiv.innerHTML = data.taxes.map(t => {
+            const pct = (parseFloat(t.taxRate) * 100).toFixed(2);
+            return `
+              <div class="pricing-row">
+                <span>${t.taxName} (${pct}%):</span>
+                <strong>+${api.formatCurrency(t.taxAmount)}</strong>
+              </div>
+            `;
+          }).join('');
+        }
+
+        document.getElementById('sim-total-tax').innerText = api.formatCurrency(data.totalTaxAmount);
+      } catch (err) {
+        console.error('Tax simulation error:', err);
+      }
+    });
+
+    function openTaxModal() {
+      document.getElementById('tax-form').reset();
+      document.getElementById('tax-id').value = '';
+      document.getElementById('tax-modal-title').innerText = 'New Tax Rule';
+      document.getElementById('tax-effective-from').value = new Date().toISOString().split('T')[0];
+      api.openModal('tax-modal');
+    }
+
+    function editTaxRule(id, name, rate, desc, from, until, active) {
+      document.getElementById('tax-id').value = id;
+      document.getElementById('tax-name').value = name;
+      document.getElementById('tax-rate').value = (parseFloat(rate) * 100).toFixed(2);
+      document.getElementById('tax-description').value = desc;
+      document.getElementById('tax-effective-from').value = from.split('T')[0];
+      document.getElementById('tax-effective-until').value = until ? until.split('T')[0] : '';
+      document.getElementById('tax-active').checked = active;
+      document.getElementById('tax-modal-title').innerText = 'Edit Tax Rule';
+      api.openModal('tax-modal');
+    }
+
+    document.getElementById('tax-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const taxId = document.getElementById('tax-id').value;
+      const ratePct = parseFloat(document.getElementById('tax-rate').value) || 0;
+
+      const payload = {
+        name: document.getElementById('tax-name').value.trim(),
+        taxRate: (ratePct / 100).toFixed(4), // store fraction (e.g. 0.1800 for 18%)
+        description: document.getElementById('tax-description').value.trim() || null,
+        effectiveFrom: document.getElementById('tax-effective-from').value,
+        effectiveUntil: document.getElementById('tax-effective-until').value || null,
+        isActive: document.getElementById('tax-active').checked
+      };
+
+      try {
+        if (taxId) {
+          await api.request(`/taxes/${taxId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Tax rule updated successfully!', 'success');
+        } else {
+          await api.request('/taxes', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Tax rule created successfully!', 'success');
+        }
+        api.closeModal('tax-modal');
+        loadPageData();
+      } catch (err) {
+        console.error('Save tax rule failed:', err);
+      }
+    });
+
+    window.openTaxModal = openTaxModal;
+    window.editTaxRule = editTaxRule;
+    document.addEventListener('DOMContentLoaded', loadPageData);
+    window.loadPageData = loadPageData;
+  </script>
+</body>
+</html>
+

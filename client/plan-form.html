@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Plan Editor — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Product Catalog</a></li>
+      <li><a href="plans.html" class="active">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Create Subscription Plan</div>
+      <div class="topbar-actions">
+        <a href="plans.html" class="btn btn-secondary">← Back to Plans</a>
+      </div>
+    </header>
+
+    <main class="content-container" style="max-width: 900px;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Plan Configuration</h3>
+          <span class="badge badge-fixed" id="plan-mode-badge">FIXED MODE</span>
+        </div>
+
+        <form id="plan-form">
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label class="form-label" for="plan-name">Plan Name *</label>
+              <input type="text" id="plan-name" class="form-control" placeholder="e.g. Growth Suite (Monthly)" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="billing-cycle">Billing Cycle *</label>
+              <select id="billing-cycle" class="form-control" required>
+                <option value="MONTHLY" selected>MONTHLY</option>
+                <option value="YEARLY">YEARLY</option>
+                <option value="WEEKLY">WEEKLY</option>
+                <option value="DAILY">DAILY</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Plan Description</label>
+            <textarea id="description" class="form-control" rows="2" placeholder="Plan overview, target audience, and bundle SLA..."></textarea>
+          </div>
+
+          <!-- Pricing Mode Configuration -->
+          <div class="pricing-box" style="margin-bottom: 24px; border-left: 4px solid var(--primary);">
+            <div class="form-row" style="align-items: center;">
+              <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <label class="form-label" for="pricing-mode">Pricing Mode *</label>
+                <select id="pricing-mode" class="form-control" required>
+                  <option value="FIXED" selected>FIXED (Single Bundle Price)</option>
+                  <option value="ITEMIZED">ITEMIZED (Calculated from Line Items)</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex: 1; margin-bottom: 0;" id="fixed-price-group">
+                <label class="form-label" for="plan-price">Bundle Plan Price (INR) *</label>
+                <input type="number" id="plan-price" class="form-control" step="0.01" min="0" placeholder="0.00" value="0.00">
+              </div>
+            </div>
+            <p id="pricing-mode-note" style="font-size: 0.85rem; color: var(--neutral-600); margin-top: 10px;">
+              💡 <strong>FIXED Mode:</strong> The bundle is billed at the exact <code>planPrice</code> above. Product inclusions listed below are bundled entitlements and will not be charged again.
+            </p>
+          </div>
+
+          <!-- Dates & Terms -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="available-from">Available From *</label>
+              <input type="date" id="available-from" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="available-until">Available Until (Optional)</label>
+              <input type="date" id="available-until" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="minimum-quantity">Minimum Seats/Quantity</label>
+              <input type="number" id="minimum-quantity" class="form-control" min="1" value="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="plan-status">Status</label>
+              <select id="plan-status" class="form-control">
+                <option value="ACTIVE" selected>ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Inclusions & Product Items Builder -->
+          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--neutral-200);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div>
+                <h4 style="font-size: 1rem; font-weight: 600;">Plan Product Inclusions & Line Items</h4>
+                <p style="font-size: 0.82rem; color: var(--neutral-500);">Add products bundled into this subscription plan.</p>
+              </div>
+              <button type="button" id="add-line-btn" class="btn btn-secondary btn-sm">+ Add Product</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table" style="font-size: 0.88rem;">
+                <thead>
+                  <tr>
+                    <th style="width: 40%;">Product</th>
+                    <th style="width: 15%;">Quantity</th>
+                    <th style="width: 25%;">Unit Price Override (Optional)</th>
+                    <th style="width: 15%;">Line Total</th>
+                    <th style="width: 5%;"></th>
+                  </tr>
+                </thead>
+                <tbody id="plan-products-tbody">
+                  <!-- Dynamic product rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pricing-box" style="margin-top: 16px;">
+              <div class="pricing-row total">
+                <span>Calculated Effective Plan Price:</span>
+                <span id="effective-total-preview" style="color: var(--primary);">₹0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px;">
+            <a href="plans.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Subscription Plan</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const planId = urlParams.get('id');
+
+    let availableProducts = [];
+    let planLines = [];
+
+    // Set default availableFrom date to today
+    document.getElementById('available-from').value = new Date().toISOString().split('T')[0];
+
+    async function init() {
+      try {
+        const prodRes = await api.request('/products?limit=200&status=ACTIVE');
+        availableProducts = prodRes.products || [];
+
+        if (planId) {
+          await loadPlanData();
+        } else {
+          // Add default first line if new
+          addLineRow();
+        }
+      } catch (err) {
+        console.error('Initialization error:', err);
+      }
+    }
+
+    async function loadPlanData() {
+      document.getElementById('page-title').innerText = 'Edit Subscription Plan';
+      try {
+        const res = await api.request(`/plans/${planId}`);
+        const p = res.data;
+
+        document.getElementById('plan-name').value = p.name;
+        document.getElementById('billing-cycle').value = p.billingCycle;
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('pricing-mode').value = p.pricingMode;
+        document.getElementById('plan-price').value = p.planPrice;
+        document.getElementById('available-from').value = p.availableFrom?.split('T')[0] || '';
+        document.getElementById('available-until').value = p.availableUntil ? p.availableUntil.split('T')[0] : '';
+        document.getElementById('minimum-quantity').value = p.minimumQuantity || 1;
+        document.getElementById('plan-status').value = p.status;
+
+        // Inclusions
+        planLines = (p.planProducts || []).map(pp => ({
+          productId: pp.productId,
+          quantity: pp.quantity,
+          unitPriceOverride: pp.unitPriceOverride !== null ? pp.unitPriceOverride : ''
+        }));
+
+        renderLines();
+        updatePricingModeUI();
+      } catch (err) {
+        console.error('Error fetching plan:', err);
+      }
+    }
+
+    function updatePricingModeUI() {
+      const mode = document.getElementById('pricing-mode').value;
+      const fixedGroup = document.getElementById('fixed-price-group');
+      const note = document.getElementById('pricing-mode-note');
+      const badge = document.getElementById('plan-mode-badge');
+
+      if (mode === 'FIXED') {
+        badge.innerText = 'FIXED MODE';
+        badge.className = 'badge badge-fixed';
+        fixedGroup.style.display = 'block';
+        note.innerHTML = '💡 <strong>FIXED Mode:</strong> The bundle is billed at the exact <code>planPrice</code> above. Product inclusions listed below are bundled entitlements and will not be charged again.';
+      } else {
+        badge.innerText = 'ITEMIZED MODE';
+        badge.className = 'badge badge-itemized';
+        fixedGroup.style.display = 'none';
+        note.innerHTML = '💡 <strong>ITEMIZED Mode:</strong> The plan price is dynamically calculated by summing each included product line (<code>quantity &times; effective unit price</code>). Base plan price is ignored.';
+      }
+      recalculateTotal();
+    }
+
+    document.getElementById('pricing-mode').addEventListener('change', updatePricingModeUI);
+    document.getElementById('plan-price').addEventListener('input', recalculateTotal);
+
+    function addLineRow() {
+      if (availableProducts.length === 0) return;
+      planLines.push({
+        productId: availableProducts[0].id,
+        quantity: 1,
+        unitPriceOverride: ''
+      });
+      renderLines();
+    }
+
+    document.getElementById('add-line-btn').addEventListener('click', addLineRow);
+
+    function removeLine(index) {
+      planLines.splice(index, 1);
+      renderLines();
+    }
+
+    function renderLines() {
+      const tbody = document.getElementById('plan-products-tbody');
+      if (planLines.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--neutral-400); padding: 20px;">No product lines. Click "+ Add Product" to add bundle items.</td></tr>`;
+        recalculateTotal();
+        return;
+      }
+
+      tbody.innerHTML = planLines.map((line, idx) => {
+        const prod = availableProducts.find(p => p.id === Number(line.productId)) || availableProducts[0];
+        const effectiveUnit = line.unitPriceOverride !== '' && line.unitPriceOverride !== null
+          ? parseFloat(line.unitPriceOverride) || 0
+          : parseFloat(prod?.salesPrice || 0);
+        const lineTotal = (line.quantity || 1) * effectiveUnit;
+
+        const optionsHtml = availableProducts.map(p =>
+          `<option value="${p.id}" ${p.id === Number(line.productId) ? 'selected' : ''}>${p.name} (Base: ₹${p.salesPrice})</option>`
+        ).join('');
+
+        return `
+          <tr>
+            <td>
+              <select class="form-control" style="padding: 6px 10px;" onchange="updateLineProduct(${idx}, this.value)">
+                ${optionsHtml}
+              </select>
+            </td>
+            <td>
+              <input type="number" class="form-control" min="1" value="${line.quantity}" style="padding: 6px 10px;" onchange="updateLineQuantity(${idx}, this.value)">
+            </td>
+            <td>
+              <input type="number" class="form-control" step="0.01" placeholder="Base: ₹${prod?.salesPrice || 0}" value="${line.unitPriceOverride}" style="padding: 6px 10px;" onchange="updateLineOverride(${idx}, this.value)">
+            </td>
+            <td>
+              <strong>${api.formatCurrency(lineTotal)}</strong>
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn btn-secondary btn-sm" style="color: var(--danger);" onclick="removeLine(${idx})">&times;</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      recalculateTotal();
+    }
+
+    window.updateLineProduct = function(idx, val) {
+      planLines[idx].productId = Number(val);
+      renderLines();
+    };
+
+    window.updateLineQuantity = function(idx, val) {
+      planLines[idx].quantity = Math.max(1, parseInt(val) || 1);
+      renderLines();
+    };
+
+    window.updateLineOverride = function(idx, val) {
+      planLines[idx].unitPriceOverride = val.trim();
+      renderLines();
+    };
+
+    window.removeLine = removeLine;
+
+    function recalculateTotal() {
+      const mode = document.getElementById('pricing-mode').value;
+      if (mode === 'FIXED') {
+        const fixedPrice = parseFloat(document.getElementById('plan-price').value) || 0;
+        document.getElementById('effective-total-preview').innerText = `${api.formatCurrency(fixedPrice)} (Bundle)`;
+      } else {
+        let sum = 0;
+        planLines.forEach(l => {
+          const prod = availableProducts.find(p => p.id === Number(l.productId));
+          const unit = l.unitPriceOverride !== '' && l.unitPriceOverride !== null
+            ? parseFloat(l.unitPriceOverride) || 0
+            : parseFloat(prod?.salesPrice || 0);
+          sum += (l.quantity || 1) * unit;
+        });
+        document.getElementById('effective-total-preview').innerText = `${api.formatCurrency(sum)} (Itemized Sum)`;
+      }
+    }
+
+    document.getElementById('plan-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const mode = document.getElementById('pricing-mode').value;
+      const payload = {
+        name: document.getElementById('plan-name').value.trim(),
+        billingCycle: document.getElementById('billing-cycle').value,
+        description: document.getElementById('description').value.trim() || null,
+        pricingMode: mode,
+        planPrice: mode === 'FIXED' ? (parseFloat(document.getElementById('plan-price').value) || 0) : 0,
+        availableFrom: document.getElementById('available-from').value,
+        availableUntil: document.getElementById('available-until').value || null,
+        minimumQuantity: parseInt(document.getElementById('minimum-quantity').value) || 1,
+        status: document.getElementById('plan-status').value,
+        products: planLines.map(l => ({
+          productId: Number(l.productId),
+          quantity: Number(l.quantity),
+          unitPriceOverride: l.unitPriceOverride !== '' && l.unitPriceOverride !== null ? parseFloat(l.unitPriceOverride) : null
+        }))
+      };
+
+      try {
+        if (planId) {
+          await api.request(`/plans/${planId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Subscription plan updated successfully!', 'success');
+        } else {
+          await api.request('/plans', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Subscription plan created successfully!', 'success');
+        }
+        setTimeout(() => {
+          window.location.href = 'plans.html';
+        }, 600);
+      } catch (err) {
+        console.error('Plan save failed:', err);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+

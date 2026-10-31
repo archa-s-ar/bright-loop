@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discounts & Pricing Simulator — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Product Catalog</a></li>
+      <li><a href="plans.html">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html" class="active">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Discounts & Pricing Engine</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Active Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+        <button onclick="openDiscountModal()" class="btn btn-primary admin-only">+ New Discount</button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Discounts Management Table -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Promotional & Subscription Discounts</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Manage fixed and percentage promotional codes, usage thresholds, and product/subscription scopes.
+            </p>
+          </div>
+          <span id="discounts-count-badge" class="badge badge-fixed">Loading...</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Code / Name</th>
+                <th>Type & Value</th>
+                <th>Scope</th>
+                <th>Minimum Purchase</th>
+                <th>Redemptions / Limit</th>
+                <th>Validity Window</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="discounts-table-body">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--neutral-400); padding: 32px;">Loading discounts...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Live Pricing Engine & Quotation Simulator -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Live Pricing Summary & Discount Validator</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Executes the central pricing engine <code>calculateSummary()</code> consumed by Member 3 (Quotations) & Member 4 (Invoices).
+            </p>
+          </div>
+          <span class="badge badge-active">End-to-End Engine</span>
+        </div>
+
+        <div class="form-row" style="align-items: flex-end;">
+          <div class="form-group" style="flex: 2;">
+            <label class="form-label" for="sim-plan">Select Plan *</label>
+            <select id="sim-plan" class="form-control">
+              <option value="">Loading plans...</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label" for="sim-seats">Quantity / Seats</label>
+            <input type="number" id="sim-seats" class="form-control" value="1" min="1">
+          </div>
+          <div class="form-group" style="flex: 1.5;">
+            <label class="form-label" for="sim-discount-code">Promo / Discount Code</label>
+            <input type="text" id="sim-discount-code" class="form-control" placeholder="e.g. WELCOME10">
+          </div>
+          <div class="form-group">
+            <button id="calculate-quote-btn" class="btn btn-primary" style="height: 40px;">Calculate Quote</button>
+          </div>
+        </div>
+
+        <!-- Calculated Summary Box -->
+        <div id="quote-result-box" class="pricing-box" style="display: none;">
+          <h4 style="font-size: 1rem; font-weight: 700; color: var(--neutral-900); margin-bottom: 12px;">Financial Pricing Summary</h4>
+          <div class="pricing-row">
+            <span>Base Plan Unit Price (<span id="qr-plan-mode">FIXED</span>):</span>
+            <strong id="qr-unit-price">₹0.00</strong>
+          </div>
+          <div class="pricing-row">
+            <span>Subtotal (<span id="qr-seats">1</span> seats):</span>
+            <strong id="qr-base-total">₹0.00</strong>
+          </div>
+          <div class="pricing-row" id="qr-discount-row" style="color: var(--success); display: none;">
+            <span>Discount Applied (<span id="qr-discount-name"></span>):</span>
+            <strong id="qr-discount-amount">-₹0.00</strong>
+          </div>
+          <div class="pricing-row">
+            <span>Taxable Subtotal:</span>
+            <strong id="qr-discounted-subtotal">₹0.00</strong>
+          </div>
+          <div class="pricing-row">
+            <span>Statutory Taxes (GST Breakdown):</span>
+            <strong id="qr-taxes-total">+₹0.00</strong>
+          </div>
+          <div id="qr-tax-details" style="padding-left: 14px; font-size: 0.82rem; color: var(--neutral-500);"></div>
+          <div class="pricing-row total">
+            <span>Grand Total (INR):</span>
+            <span id="qr-grand-total" style="color: var(--primary);">₹0.00</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Discount Modal -->
+  <div id="discount-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="discount-modal-title">New Discount</h3>
+        <button class="modal-close" onclick="api.closeModal('discount-modal')">&times;</button>
+      </div>
+      <form id="discount-form">
+        <div class="modal-body">
+          <input type="hidden" id="discount-id">
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label class="form-label" for="disc-name">Discount Code / Name *</label>
+              <input type="text" id="disc-name" class="form-control" placeholder="e.g. WELCOME10, ANNUAL20" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="disc-type">Type *</label>
+              <select id="disc-type" class="form-control" required>
+                <option value="PERCENTAGE">PERCENTAGE (%)</option>
+                <option value="FIXED">FIXED (₹)</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="disc-value">Value *</label>
+              <input type="number" id="disc-value" class="form-control" step="0.01" min="0.01" placeholder="10.00" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="disc-desc">Description</label>
+            <input type="text" id="disc-desc" class="form-control" placeholder="Promotional campaign details...">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="disc-scope">Discount Scope *</label>
+              <select id="disc-scope" class="form-control" required>
+                <option value="SUBSCRIPTION" selected>SUBSCRIPTION (Whole Order)</option>
+                <option value="PRODUCT">PRODUCT (Specific Products Only)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="disc-min-purchase">Minimum Purchase (INR)</label>
+              <input type="number" id="disc-min-purchase" class="form-control" step="0.01" min="0" value="0.00">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="disc-min-qty">Minimum Quantity</label>
+              <input type="number" id="disc-min-qty" class="form-control" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="disc-starts">Start Date *</label>
+              <input type="datetime-local" id="disc-starts" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="disc-ends">End Date (Optional)</label>
+              <input type="datetime-local" id="disc-ends" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="disc-usage-limit">Usage Limit (Optional)</label>
+              <input type="number" id="disc-usage-limit" class="form-control" min="1" placeholder="Unlimited">
+            </div>
+          </div>
+
+          <!-- Product Picker for PRODUCT scope -->
+          <div id="product-picker-container" style="display: none; margin-top: 12px; padding: 12px; border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); background: var(--neutral-50);">
+            <label class="form-label">Qualifying Products for this Discount</label>
+            <div id="qualifying-products-checkboxes" style="max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;"></div>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="disc-active" checked>
+              <span style="font-weight: 500; font-size: 0.9rem;">Discount is Active</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="api.closeModal('discount-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Discount</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    let allProducts = [];
+
+    async function loadPageData() {
+      try {
+        const [discRes, planRes, prodRes] = await Promise.all([
+          api.request('/discounts').catch(() => ({ data: [] })),
+          api.request('/plans?status=ACTIVE'),
+          api.request('/products?limit=100&status=ACTIVE')
+        ]);
+
+        renderDiscounts(discRes.data || []);
+        allProducts = prodRes.products || [];
+        populatePlanSimulator(planRes.data || []);
+        renderProductCheckboxes(allProducts);
+      } catch (err) {
+        console.error('Error loading discounts:', err);
+      }
+    }
+
+    function renderDiscounts(discounts) {
+      const tbody = document.getElementById('discounts-table-body');
+      const badge = document.getElementById('discounts-count-badge');
+      badge.innerText = `${discounts.length} Discounts`;
+
+      if (discounts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--neutral-500); padding: 32px;">No discounts configured. Click "+ New Discount" to create one.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = discounts.map(d => {
+        const valStr = d.discountType === 'PERCENTAGE' ? `${d.discountValue}%` : api.formatCurrency(d.discountValue);
+        const redemptions = d._count?.redemptions || 0;
+        const usageLimitStr = d.usageLimit !== null ? `${redemptions} / ${d.usageLimit}` : `${redemptions} / ∞`;
+        const datesStr = `${api.formatDate(d.startsAt)} → ${d.endsAt ? api.formatDate(d.endsAt) : 'No Expiry'}`;
+
+        return `
+          <tr>
+            <td>
+              <strong style="color: var(--primary);">${d.name}</strong>
+              ${d.description ? `<div style="font-size: 0.8rem; color: var(--neutral-500);">${d.description}</div>` : ''}
+            </td>
+            <td><strong>${valStr}</strong></td>
+            <td><span class="badge ${d.scope === 'PRODUCT' ? 'badge-fixed' : 'badge-itemized'}">${d.scope}</span></td>
+            <td>${api.formatCurrency(d.minimumPurchase)}</td>
+            <td>${usageLimitStr}</td>
+            <td style="font-size: 0.82rem;">${datesStr}</td>
+            <td><span class="badge ${d.isActive ? 'badge-active' : 'badge-inactive'}">${d.isActive ? 'ACTIVE' : 'INACTIVE'}</span></td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button onclick="editDiscount(${d.id})" class="btn btn-secondary btn-sm admin-only">Edit</button>
+              <button onclick="toggleDiscountStatus(${d.id}, ${d.isActive})" class="btn btn-secondary btn-sm admin-only">
+                ${d.isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function populatePlanSimulator(plans) {
+      const select = document.getElementById('sim-plan');
+      if (plans.length === 0) {
+        select.innerHTML = '<option value="">No active plans available</option>';
+        return;
+      }
+      select.innerHTML = plans.map(p =>
+        `<option value="${p.id}">${p.name} (${p.billingCycle} - ${p.pricingMode})</option>`
+      ).join('');
+    }
+
+    function renderProductCheckboxes(products) {
+      const container = document.getElementById('qualifying-products-checkboxes');
+      container.innerHTML = products.map(p => `
+        <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" name="qualifying-product" value="${p.id}">
+          <span>${p.name} (₹${p.salesPrice})</span>
+        </label>
+      `).join('');
+    }
+
+    document.getElementById('disc-scope').addEventListener('change', (e) => {
+      const picker = document.getElementById('product-picker-container');
+      picker.style.display = e.target.value === 'PRODUCT' ? 'block' : 'none';
+    });
+
+    // Run Live Pricing Summary Simulation
+    document.getElementById('calculate-quote-btn').addEventListener('click', async () => {
+      const planId = document.getElementById('sim-plan').value;
+      const quantity = parseInt(document.getElementById('sim-seats').value) || 1;
+      const discountName = document.getElementById('sim-discount-code').value.trim();
+
+      if (!planId) {
+        api.showToast('Please select a plan', 'error');
+        return;
+      }
+
+      try {
+        const res = await api.request('/pricing/calculate-summary', {
+          method: 'POST',
+          body: JSON.stringify({ planId, quantity, discountName })
+        });
+        const summary = res.data;
+
+        document.getElementById('quote-result-box').style.display = 'block';
+        document.getElementById('qr-plan-mode').innerText = summary.pricingMode;
+        document.getElementById('qr-unit-price').innerText = api.formatCurrency(summary.unitPrice);
+        document.getElementById('qr-seats').innerText = summary.quantity;
+        document.getElementById('qr-base-total').innerText = api.formatCurrency(summary.planBaseTotal);
+
+        const discRow = document.getElementById('qr-discount-row');
+        if (summary.discount && summary.discount.applied) {
+          discRow.style.display = 'flex';
+          document.getElementById('qr-discount-name').innerText = summary.discount.discountName;
+          document.getElementById('qr-discount-amount').innerText = `-${api.formatCurrency(summary.discount.discountAmount)}`;
+        } else {
+          discRow.style.display = 'none';
+          if (discountName && summary.discount && !summary.discount.applied) {
+            api.showToast(summary.discount.message || 'Discount not applicable', 'error');
+          }
+        }
+
+        document.getElementById('qr-discounted-subtotal').innerText = api.formatCurrency(summary.discountedSubtotal);
+        document.getElementById('qr-taxes-total').innerText = `+${api.formatCurrency(summary.taxes.totalTax)}`;
+
+        const taxDetails = document.getElementById('qr-tax-details');
+        taxDetails.innerHTML = summary.taxes.items.map(t =>
+          `<div>• ${t.taxName} (${t.taxRate}): +${api.formatCurrency(t.taxAmount)}</div>`
+        ).join('');
+
+        document.getElementById('qr-grand-total').innerText = api.formatCurrency(summary.grandTotal);
+      } catch (err) {
+        console.error('Pricing calculation failed:', err);
+      }
+    });
+
+    function openDiscountModal() {
+      document.getElementById('discount-form').reset();
+      document.getElementById('discount-id').value = '';
+      document.getElementById('discount-modal-title').innerText = 'New Discount';
+      document.getElementById('disc-starts').value = new Date().toISOString().slice(0, 16);
+      document.getElementById('product-picker-container').style.display = 'none';
+      api.openModal('discount-modal');
+    }
+
+    async function editDiscount(id) {
+      try {
+        const res = await api.request(`/discounts/${id}`);
+        const d = res.data;
+        document.getElementById('discount-id').value = d.id;
+        document.getElementById('disc-name').value = d.name;
+        document.getElementById('disc-type').value = d.discountType;
+        document.getElementById('disc-value').value = d.discountValue;
+        document.getElementById('disc-desc').value = d.description || '';
+        document.getElementById('disc-scope').value = d.scope;
+        document.getElementById('disc-min-purchase').value = d.minimumPurchase;
+        document.getElementById('disc-min-qty').value = d.minimumQuantity;
+        document.getElementById('disc-starts').value = d.startsAt?.slice(0, 16) || '';
+        document.getElementById('disc-ends').value = d.endsAt ? d.endsAt.slice(0, 16) : '';
+        document.getElementById('disc-usage-limit').value = d.usageLimit || '';
+        document.getElementById('disc-active').checked = d.isActive;
+
+        const picker = document.getElementById('product-picker-container');
+        picker.style.display = d.scope === 'PRODUCT' ? 'block' : 'none';
+
+        const checkedIds = new Set((d.discountProducts || []).map(dp => dp.productId));
+        document.querySelectorAll('input[name="qualifying-product"]').forEach(cb => {
+          cb.checked = checkedIds.has(parseInt(cb.value));
+        });
+
+        document.getElementById('discount-modal-title').innerText = 'Edit Discount';
+        api.openModal('discount-modal');
+      } catch (err) {
+        console.error('Failed to load discount for edit:', err);
+      }
+    }
+
+    async function toggleDiscountStatus(id, currentActive) {
+      try {
+        await api.request(`/discounts/${id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ isActive: !currentActive })
+        });
+        api.showToast(`Discount ${!currentActive ? 'activated' : 'deactivated'}`, 'success');
+        loadPageData();
+      } catch (err) {
+        console.error('Failed to toggle discount:', err);
+      }
+    }
+
+    document.getElementById('discount-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const discId = document.getElementById('discount-id').value;
+      const scope = document.getElementById('disc-scope').value;
+
+      const checkedBoxes = document.querySelectorAll('input[name="qualifying-product"]:checked');
+      const productIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+      const payload = {
+        name: document.getElementById('disc-name').value.trim(),
+        discountType: document.getElementById('disc-type').value,
+        discountValue: parseFloat(document.getElementById('disc-value').value) || 0,
+        description: document.getElementById('disc-desc').value.trim() || null,
+        scope,
+        minimumPurchase: parseFloat(document.getElementById('disc-min-purchase').value) || 0,
+        minimumQuantity: parseInt(document.getElementById('disc-min-qty').value) || 0,
+        startsAt: new Date(document.getElementById('disc-starts').value).toISOString(),
+        endsAt: document.getElementById('disc-ends').value ? new Date(document.getElementById('disc-ends').value).toISOString() : null,
+        usageLimit: document.getElementById('disc-usage-limit').value ? parseInt(document.getElementById('disc-usage-limit').value) : null,
+        isActive: document.getElementById('disc-active').checked,
+        productIds: scope === 'PRODUCT' ? productIds : []
+      };
+
+      try {
+        if (discId) {
+          await api.request(`/discounts/${discId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Discount updated successfully!', 'success');
+        } else {
+          await api.request('/discounts', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Discount created successfully!', 'success');
+        }
+        api.closeModal('discount-modal');
+        loadPageData();
+      } catch (err) {
+        console.error('Save discount failed:', err);
+      }
+    });
+
+    window.openDiscountModal = openDiscountModal;
+    window.editDiscount = editDiscount;
+    window.toggleDiscountStatus = toggleDiscountStatus;
+    document.addEventListener('DOMContentLoaded', loadPageData);
+    window.loadPageData = loadPageData;
+  </script>
+</body>
+</html>
+
