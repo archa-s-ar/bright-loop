@@ -1,1 +1,1 @@
-# Brightloop Subscription Management System 
+# BrightLoop Subscription Management System
