@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Plans — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Product Catalog</a></li>
+      <li><a href="plans.html" class="active">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Subscription Plans & Bundles</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Active Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+        <a href="plan-form.html" class="btn btn-primary admin-only">+ New Plan</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Filter Bar -->
+      <div class="card" style="padding: 16px 20px; margin-bottom: 20px;">
+        <div class="form-row" style="align-items: center;">
+          <div>
+            <select id="cycle-filter" class="form-control">
+              <option value="">All Billing Cycles</option>
+              <option value="DAILY">DAILY</option>
+              <option value="WEEKLY">WEEKLY</option>
+              <option value="MONTHLY">MONTHLY</option>
+              <option value="YEARLY">YEARLY</option>
+            </select>
+          </div>
+          <div>
+            <select id="mode-filter" class="form-control">
+              <option value="">All Pricing Modes</option>
+              <option value="FIXED">FIXED (Bundle Price)</option>
+              <option value="ITEMIZED">ITEMIZED (Line Items Sum)</option>
+            </select>
+          </div>
+          <div>
+            <select id="status-filter" class="form-control">
+              <option value="">All Statuses</option>
+              <option value="ACTIVE" selected>ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+              <option value="ARCHIVED">ARCHIVED</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="apply-filter-btn" class="btn btn-secondary">Filter</button>
+            <button id="reset-filter-btn" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plans Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Available Subscription Plans</h3>
+          <span id="plans-count-badge" class="badge badge-fixed">Loading...</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Plan Name</th>
+                <th>Cycle</th>
+                <th>Pricing Mode</th>
+                <th>Effective Unit Price</th>
+                <th>Inclusions</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="plans-table-body">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--neutral-400); padding: 32px;">Loading plans...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Plan Pricing Inspection Modal -->
+  <div id="plan-pricing-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-plan-title">Plan Pricing Breakdown</h3>
+        <button class="modal-close" onclick="api.closeModal('plan-pricing-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+          <span id="modal-cycle-badge" class="badge badge-cycle">CYCLE</span>
+          <span id="modal-mode-badge" class="badge badge-fixed">MODE</span>
+        </div>
+        <p id="modal-plan-desc" style="color: var(--neutral-600); margin-bottom: 20px;"></p>
+
+        <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 10px;">Included Product Entitlements & Pricing Lines</h4>
+        <div class="table-responsive">
+          <table class="data-table" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Line Total</th>
+                <th>Bundle Status</th>
+              </tr>
+            </thead>
+            <tbody id="modal-lines-body"></tbody>
+          </table>
+        </div>
+
+        <div class="pricing-box">
+          <div class="pricing-row">
+            <span>Pricing Engine Mode:</span>
+            <strong id="modal-calc-mode">FIXED</strong>
+          </div>
+          <div class="pricing-row total">
+            <span>Total Plan Unit Price:</span>
+            <span id="modal-final-price" style="color: var(--primary);">₹0.00</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="api.closeModal('plan-pricing-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    async function loadPageData() {
+      const cycle = document.getElementById('cycle-filter').value;
+      const mode = document.getElementById('mode-filter').value;
+      const status = document.getElementById('status-filter').value;
+
+      const params = new URLSearchParams();
+      if (cycle) params.append('billingCycle', cycle);
+      if (mode) params.append('pricingMode', mode);
+      if (status) params.append('status', status);
+
+      try {
+        const res = await api.request(`/plans?${params.toString()}`);
+        renderPlans(res.data || []);
+      } catch (err) {
+        console.error('Error fetching plans:', err);
+      }
+    }
+
+    function renderPlans(plans) {
+      const tbody = document.getElementById('plans-table-body');
+      const badge = document.getElementById('plans-count-badge');
+      badge.innerText = `${plans.length} Plans`;
+
+      if (plans.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--neutral-500); padding: 40px;">
+              No plans found matching your criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = plans.map(p => {
+        const statusClass = p.status === 'ACTIVE' ? 'badge-active' : (p.status === 'INACTIVE' ? 'badge-inactive' : 'badge-archived');
+        const modeBadge = p.pricingMode === 'FIXED' ? 'badge-fixed' : 'badge-itemized';
+        const productCount = p.planProducts?.length || 0;
+
+        // Display price indicator
+        let priceDisplay = api.formatCurrency(p.planPrice);
+        if (p.pricingMode === 'ITEMIZED') {
+          // Calculate itemized sum
+          let itemizedSum = 0;
+          p.planProducts?.forEach(pp => {
+            const up = pp.unitPriceOverride !== null ? parseFloat(pp.unitPriceOverride) : parseFloat(pp.product.salesPrice);
+            itemizedSum += pp.quantity * up;
+          });
+          priceDisplay = `${api.formatCurrency(itemizedSum)} (Calculated)`;
+        }
+
+        return `
+          <tr>
+            <td>
+              <strong>${p.name}</strong>
+              ${p.description ? `<div style="font-size: 0.8rem; color: var(--neutral-500); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.description}</div>` : ''}
+            </td>
+            <td><span class="badge badge-cycle">${p.billingCycle}</span></td>
+            <td><span class="badge ${modeBadge}">${p.pricingMode}</span></td>
+            <td><strong style="color: var(--primary);">${priceDisplay}</strong></td>
+            <td>${productCount} product${productCount === 1 ? '' : 's'}</td>
+            <td><span class="badge ${statusClass}">${p.status}</span></td>
+            <td style="text-align: right; white-space: nowrap;">
+              <button onclick="inspectPlan(${p.id})" class="btn btn-secondary btn-sm" title="View pricing breakdown">Inspect</button>
+              <a href="plan-form.html?id=${p.id}" class="btn btn-secondary btn-sm admin-only">Edit</a>
+              <button onclick="togglePlanStatus(${p.id}, '${p.status}')" class="btn btn-secondary btn-sm admin-only">
+                ${p.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function inspectPlan(planId) {
+      try {
+        const res = await api.request(`/pricing/plan/${planId}`);
+        const p = res.data;
+
+        document.getElementById('modal-plan-title').innerText = p.planName;
+        document.getElementById('modal-cycle-badge').innerText = p.billingCycle;
+        document.getElementById('modal-mode-badge').innerText = p.pricingMode;
+        document.getElementById('modal-calc-mode').innerText = p.pricingMode === 'FIXED' ? 'FIXED Bundle (Base Price Billed)' : 'ITEMIZED (Sum of Product Lines)';
+        document.getElementById('modal-final-price').innerText = api.formatCurrency(p.totalUnitAmount);
+
+        const tbody = document.getElementById('modal-lines-body');
+        if (p.lines.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--neutral-500); padding: 16px;">No products attached to this plan.</td></tr>`;
+        } else {
+          tbody.innerHTML = p.lines.map(l => `
+            <tr>
+              <td><strong>${l.productName}</strong> <span style="font-size:0.75rem; color:var(--neutral-400);">(${l.productType})</span></td>
+              <td>${l.quantity}</td>
+              <td>${api.formatCurrency(l.effectiveUnitPrice)}</td>
+              <td>${api.formatCurrency(l.lineTotal)}</td>
+              <td><span class="badge ${l.includedInFixedBundle ? 'badge-fixed' : 'badge-itemized'}">${l.includedInFixedBundle ? 'Included In Bundle' : 'Charged Item'}</span></td>
+            </tr>
+          `).join('');
+        }
+
+        api.openModal('plan-pricing-modal');
+      } catch (err) {
+        console.error('Failed to inspect plan:', err);
+      }
+    }
+
+    async function togglePlanStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      try {
+        await api.request(`/plans/${id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: newStatus })
+        });
+        api.showToast(`Plan status updated to ${newStatus}`, 'success');
+        loadPageData();
+      } catch (err) {
+        console.error('Failed to toggle plan status:', err);
+      }
+    }
+
+    document.getElementById('apply-filter-btn').addEventListener('click', loadPageData);
+    document.getElementById('reset-filter-btn').addEventListener('click', () => {
+      document.getElementById('cycle-filter').value = '';
+      document.getElementById('mode-filter').value = '';
+      document.getElementById('status-filter').value = '';
+      loadPageData();
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPageData);
+    window.loadPageData = loadPageData;
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Editor — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html" class="active">📦 Product Catalog</a></li>
+      <li><a href="plans.html">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Add New Product</div>
+      <div class="topbar-actions">
+        <a href="products.html" class="btn btn-secondary">← Back to Products</a>
+      </div>
+    </header>
+
+    <main class="content-container" style="max-width: 800px;">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title" id="form-card-title">Product Information</h3>
+          <span class="badge badge-active" id="mode-badge">Creating</span>
+        </div>
+
+        <form id="product-form">
+          <div class="form-row">
+            <div class="form-group" style="flex: 2;">
+              <label class="form-label" for="name">Product Name *</label>
+              <input type="text" id="name" class="form-control" placeholder="e.g. Odoo ERP Connector" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label class="form-label" for="productType">Product Type *</label>
+              <input type="text" id="productType" class="form-control" placeholder="e.g. SaaS, Add-on, License" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Description</label>
+            <textarea id="description" class="form-control" rows="3" placeholder="Brief overview of software capabilities, included features, etc."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="salesPrice">Base Sales Price (INR) *</label>
+              <input type="number" id="salesPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="costPrice">Cost Price (INR) *</label>
+              <input type="number" id="costPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="status">Status</label>
+              <select id="status" class="form-control">
+                <option value="ACTIVE" selected>ACTIVE</option>
+                <option value="INACTIVE">INACTIVE</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Profit Margin Live Preview -->
+          <div class="pricing-box" style="margin-bottom: 20px;">
+            <div class="pricing-row">
+              <span>Gross Profit Margin:</span>
+              <strong id="margin-preview">0.00% (₹0.00)</strong>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="notes">Internal Notes</label>
+            <textarea id="notes" class="form-control" rows="2" placeholder="Administrative or licensing notes..."></textarea>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+            <a href="products.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="submit-btn">Save Product</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    function updateMargin() {
+      const sales = parseFloat(document.getElementById('salesPrice').value) || 0;
+      const cost = parseFloat(document.getElementById('costPrice').value) || 0;
+      const profit = sales - cost;
+      const marginPct = sales > 0 ? (profit / sales * 100).toFixed(2) : '0.00';
+      document.getElementById('margin-preview').innerText = `${marginPct}% (₹${profit.toFixed(2)})`;
+    }
+
+    document.getElementById('salesPrice').addEventListener('input', updateMargin);
+    document.getElementById('costPrice').addEventListener('input', updateMargin);
+
+    async function loadProductData() {
+      if (!productId) return;
+
+      document.getElementById('page-title').innerText = 'Edit Product';
+      document.getElementById('form-card-title').innerText = 'Edit Product Details';
+      document.getElementById('mode-badge').innerText = `ID #${productId}`;
+
+      try {
+        const res = await api.request(`/products/${productId}`);
+        const p = res.data;
+        document.getElementById('name').value = p.name;
+        document.getElementById('productType').value = p.productType;
+        document.getElementById('description').value = p.description || '';
+        document.getElementById('salesPrice').value = p.salesPrice;
+        document.getElementById('costPrice').value = p.costPrice;
+        document.getElementById('status').value = p.status;
+        document.getElementById('notes').value = p.notes || '';
+        updateMargin();
+      } catch (err) {
+        console.error('Error fetching product:', err);
+      }
+    }
+
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        productType: document.getElementById('productType').value.trim(),
+        description: document.getElementById('description').value.trim() || null,
+        salesPrice: parseFloat(document.getElementById('salesPrice').value) || 0,
+        costPrice: parseFloat(document.getElementById('costPrice').value) || 0,
+        status: document.getElementById('status').value,
+        notes: document.getElementById('notes').value.trim() || null
+      };
+
+      try {
+        if (productId) {
+          await api.request(`/products/${productId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Product updated successfully!', 'success');
+        } else {
+          const res = await api.request('/products', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Product created successfully!', 'success');
+          setTimeout(() => {
+            window.location.href = `product-details.html?id=${res.data.id}`;
+          }, 600);
+          return;
+        }
+        setTimeout(() => {
+          window.location.href = `product-details.html?id=${productId}`;
+        }, 600);
+      } catch (err) {
+        console.error('Save failed:', err);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadProductData);
+  </script>
+</body>
+</html>
+

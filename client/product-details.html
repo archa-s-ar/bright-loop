@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details & Variants — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html" class="active">📦 Product Catalog</a></li>
+      <li><a href="plans.html">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title" id="page-title">Product Details</div>
+      <div class="topbar-actions">
+        <a href="products.html" class="btn btn-secondary">← Back to Catalog</a>
+        <a href="#" id="edit-product-link" class="btn btn-primary admin-only">Edit Product</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Product Overview Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 id="product-name" style="font-size: 1.4rem; font-weight: 700;">Loading...</h2>
+            <div id="product-type-badge" style="margin-top: 4px;"></div>
+          </div>
+          <span id="product-status-badge" class="badge badge-active">ACTIVE</span>
+        </div>
+
+        <p id="product-description" style="color: var(--neutral-600); margin-bottom: 20px;">No description provided.</p>
+
+        <div class="stats-grid" style="margin-bottom: 0;">
+          <div class="stat-card" style="padding: 14px;">
+            <div class="stat-label">Base Sales Price</div>
+            <div class="stat-value" id="base-sales-price" style="font-size: 1.5rem; color: var(--primary);">₹0.00</div>
+          </div>
+          <div class="stat-card" style="padding: 14px;">
+            <div class="stat-label">Cost Price</div>
+            <div class="stat-value" id="base-cost-price" style="font-size: 1.5rem; color: var(--neutral-600);">₹0.00</div>
+          </div>
+          <div class="stat-card" style="padding: 14px;">
+            <div class="stat-label">Variants Configured</div>
+            <div class="stat-value" id="variants-count" style="font-size: 1.5rem;">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variants & Add-ons Manager -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Product Variants & Add-on Tiers</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Configure attribute variations (e.g. Standard, Premium, Enterprise) and price adjustments (<code>priceDelta</code>).
+            </p>
+          </div>
+          <button onclick="api.openModal('variant-modal')" class="btn btn-primary btn-sm admin-only">+ Add Variant</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Attribute Name</th>
+                <th>Attribute Value</th>
+                <th>Price Adjustment (Δ)</th>
+                <th>Effective Variant Price</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="variants-table-body">
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--neutral-400); padding: 24px;">No variants configured.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tax Rules Mapping Card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Assigned Statutory Tax Rules</h3>
+            <p style="font-size: 0.85rem; color: var(--neutral-500); margin-top: 2px;">
+              Attach GST and applicable statutory tax rules for automated tax snapshots during invoice generation.
+            </p>
+          </div>
+          <button id="save-taxes-btn" class="btn btn-secondary btn-sm admin-only">Save Tax Rules</button>
+        </div>
+
+        <div id="tax-rules-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+          <p style="color: var(--neutral-400);">Loading tax rules...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Variant Modal -->
+  <div id="variant-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="variant-modal-title">Add Product Variant</h3>
+        <button class="modal-close" onclick="api.closeModal('variant-modal')">&times;</button>
+      </div>
+      <form id="variant-form">
+        <div class="modal-body">
+          <input type="hidden" id="variant-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="attr-name">Attribute Name *</label>
+              <input type="text" id="attr-name" class="form-control" placeholder="e.g. Edition, License Tier, Storage" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="attr-value">Attribute Value *</label>
+              <input type="text" id="attr-value" class="form-control" placeholder="e.g. Standard, Enterprise, 100GB" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="price-delta">Price Delta (INR) *</label>
+              <input type="number" id="price-delta" class="form-control" step="0.01" placeholder="0.00 (e.g. 560.00)" required>
+              <span style="font-size: 0.8rem; color: var(--neutral-500);">Amount added to base product price. Can be negative.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Calculated Price Preview</label>
+              <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); padding: 8px 0;" id="variant-preview-price">₹0.00</div>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="checkbox" id="variant-active" checked>
+              <span style="font-weight: 500; font-size: 0.9rem;">Active Variant</span>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="api.closeModal('variant-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Variant</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    let productBasePrice = 0;
+
+    async function loadPageData() {
+      if (!productId) {
+        window.location.href = 'products.html';
+        return;
+      }
+
+      document.getElementById('edit-product-link').href = `product-form.html?id=${productId}`;
+
+      try {
+        const [prodRes, taxRes] = await Promise.all([
+          api.request(`/products/${productId}`),
+          api.request('/taxes')
+        ]);
+
+        const p = prodRes.data;
+        productBasePrice = parseFloat(p.salesPrice) || 0;
+
+        document.getElementById('product-name').innerText = p.name;
+        document.getElementById('product-description').innerText = p.description || 'No description provided.';
+        document.getElementById('product-type-badge').innerHTML = `<span class="badge badge-fixed">${p.productType}</span>`;
+        document.getElementById('base-sales-price').innerText = api.formatCurrency(p.salesPrice);
+        document.getElementById('base-cost-price').innerText = api.formatCurrency(p.costPrice);
+        document.getElementById('variants-count').innerText = p.variants?.length || 0;
+
+        const statusClass = p.status === 'ACTIVE' ? 'badge-active' : (p.status === 'INACTIVE' ? 'badge-inactive' : 'badge-archived');
+        document.getElementById('product-status-badge').className = `badge ${statusClass}`;
+        document.getElementById('product-status-badge').innerText = p.status;
+
+        // Render variants table
+        renderVariants(p.variants || []);
+
+        // Render tax rules checkbox list
+        renderTaxOptions(taxRes.data || [], p.productTaxRules || []);
+
+      } catch (err) {
+        console.error('Error loading product details:', err);
+      }
+    }
+
+    function renderVariants(variants) {
+      const tbody = document.getElementById('variants-table-body');
+      if (variants.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--neutral-500); padding: 32px;">
+              No variants defined yet. Click "+ Add Variant" to configure pricing adjustments.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = variants.map(v => {
+        const delta = parseFloat(v.priceDelta) || 0;
+        const effective = productBasePrice + delta;
+        const deltaSign = delta >= 0 ? `+${api.formatCurrency(delta)}` : api.formatCurrency(delta);
+
+        return `
+          <tr>
+            <td><strong>${v.attributeName}</strong></td>
+            <td>${v.attributeValue}</td>
+            <td style="color: ${delta >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight: 600;">${deltaSign}</td>
+            <td><strong>${api.formatCurrency(effective)}</strong></td>
+            <td>
+              <span class="badge ${v.isActive ? 'badge-active' : 'badge-inactive'}">
+                ${v.isActive ? 'ACTIVE' : 'INACTIVE'}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <button onclick="editVariant(${v.id}, '${v.attributeName}', '${v.attributeValue}', ${v.priceDelta}, ${v.isActive})" class="btn btn-secondary btn-sm admin-only">Edit</button>
+              <button onclick="deleteVariant(${v.id})" class="btn btn-danger btn-sm admin-only">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderTaxOptions(allTaxes, productTaxes) {
+      const container = document.getElementById('tax-rules-container');
+      const assignedIds = new Set(productTaxes.map(pt => pt.taxRuleId));
+
+      if (allTaxes.length === 0) {
+        container.innerHTML = `<p style="color: var(--neutral-500);">No tax rules configured in the system. Create taxes in the <a href="taxes.html">Tax Rules</a> section.</p>`;
+        return;
+      }
+
+      container.innerHTML = allTaxes.map(t => {
+        const checked = assignedIds.has(t.id) ? 'checked' : '';
+        const pct = (parseFloat(t.taxRate) * 100).toFixed(2);
+        return `
+          <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--neutral-200); border-radius: var(--radius-sm); background: var(--neutral-50); cursor: pointer;">
+            <input type="checkbox" name="product-tax-rule" value="${t.id}" ${checked} style="margin-top: 3px;">
+            <div>
+              <strong>${t.name}</strong> (${pct}%)
+              <div style="font-size: 0.8rem; color: var(--neutral-500);">${t.description || 'Statutory tax rule'}</div>
+            </div>
+          </label>
+        `;
+      }).join('');
+    }
+
+    // Save tax rules mapping
+    document.getElementById('save-taxes-btn').addEventListener('click', async () => {
+      const checkedBoxes = document.querySelectorAll('input[name="product-tax-rule"]:checked');
+      const taxRuleIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+      try {
+        await api.request(`/products/${productId}/taxes`, {
+          method: 'POST',
+          body: JSON.stringify({ taxRuleIds })
+        });
+        api.showToast('Product tax rules updated successfully!', 'success');
+        loadPageData();
+      } catch (err) {
+        console.error('Failed to update taxes:', err);
+      }
+    });
+
+    // Price preview calculation in variant modal
+    document.getElementById('price-delta').addEventListener('input', (e) => {
+      const delta = parseFloat(e.target.value) || 0;
+      const preview = productBasePrice + delta;
+      document.getElementById('variant-preview-price').innerText = api.formatCurrency(preview);
+    });
+
+    function editVariant(id, name, val, delta, active) {
+      document.getElementById('variant-id').value = id;
+      document.getElementById('attr-name').value = name;
+      document.getElementById('attr-value').value = val;
+      document.getElementById('price-delta').value = delta;
+      document.getElementById('variant-active').checked = active;
+      document.getElementById('variant-modal-title').innerText = 'Edit Variant';
+      document.getElementById('variant-preview-price').innerText = api.formatCurrency(productBasePrice + parseFloat(delta));
+      api.openModal('variant-modal');
+    }
+
+    async function deleteVariant(variantId) {
+      if (!confirm('Are you sure you want to delete this variant?')) return;
+      try {
+        await api.request(`/variants/${variantId}`, { method: 'DELETE' });
+        api.showToast('Variant removed successfully.', 'success');
+        loadPageData();
+      } catch (err) {
+        console.error('Failed to delete variant:', err);
+      }
+    }
+
+    document.getElementById('variant-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const variantId = document.getElementById('variant-id').value;
+      const payload = {
+        attributeName: document.getElementById('attr-name').value.trim(),
+        attributeValue: document.getElementById('attr-value').value.trim(),
+        priceDelta: parseFloat(document.getElementById('price-delta').value) || 0,
+        isActive: document.getElementById('variant-active').checked
+      };
+
+      try {
+        if (variantId) {
+          await api.request(`/variants/${variantId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Variant updated successfully!', 'success');
+        } else {
+          await api.request(`/products/${productId}/variants`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          api.showToast('Variant created successfully!', 'success');
+        }
+        api.closeModal('variant-modal');
+        document.getElementById('variant-form').reset();
+        document.getElementById('variant-id').value = '';
+        loadPageData();
+      } catch (err) {
+        console.error('Failed to save variant:', err);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPageData);
+    window.loadPageData = loadPageData;
+  </script>
+</body>
+</html>
+

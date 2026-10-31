@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products Catalog — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html" class="active">📦 Product Catalog</a></li>
+      <li><a href="plans.html">📑 Subscription Plans</a></li>
+      <li><a href="taxes.html">⚖️ Tax Rules</a></li>
+      <li><a href="discounts.html">🏷️ Discounts & Offers</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 2: Catalog & Pricing<br>
+      Branch: <strong>pricing</strong>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Product Catalog</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Active Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+        <a href="product-form.html" class="btn btn-primary admin-only">+ New Product</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Filter Bar -->
+      <div class="card" style="padding: 16px 20px; margin-bottom: 20px;">
+        <div class="form-row" style="align-items: center;">
+          <div>
+            <input type="text" id="search-input" class="form-control" placeholder="Search by product name or keyword...">
+          </div>
+          <div>
+            <select id="status-filter" class="form-control">
+              <option value="">All Statuses</option>
+              <option value="ACTIVE" selected>ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+              <option value="ARCHIVED">ARCHIVED</option>
+            </select>
+          </div>
+          <div>
+            <input type="text" id="type-filter" class="form-control" placeholder="Filter by product type (e.g. SaaS, Add-on)">
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="apply-filter-btn" class="btn btn-secondary">Filter</button>
+            <button id="reset-filter-btn" class="btn btn-secondary">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Table -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Products</h3>
+          <span id="products-count-badge" class="badge badge-fixed">Loading...</span>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Product Name</th>
+                <th>Type</th>
+                <th>Sales Price</th>
+                <th>Cost Price</th>
+                <th>Variants</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <tr>
+                <td colspan="7" style="text-align: center; color: var(--neutral-400); padding: 32px;">Loading products...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--neutral-200);">
+          <span id="pagination-info" style="font-size: 0.88rem; color: var(--neutral-500);">Page 1 of 1</span>
+          <div style="display: flex; gap: 8px;">
+            <button id="prev-page-btn" class="btn btn-secondary btn-sm" disabled>Previous</button>
+            <button id="next-page-btn" class="btn btn-secondary btn-sm" disabled>Next</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container"></div>
+  <script src="js/api.js"></script>
+  <script>
+    let currentPage = 1;
+
+    async function loadPageData() {
+      const search = document.getElementById('search-input').value.trim();
+      const status = document.getElementById('status-filter').value;
+      const type = document.getElementById('type-filter').value.trim();
+
+      const params = new URLSearchParams({ page: currentPage, limit: 10 });
+      if (search) params.append('search', search);
+      if (status) params.append('status', status);
+      if (type) params.append('productType', type);
+
+      try {
+        const res = await api.request(`/products?${params.toString()}`);
+        renderProducts(res.products || [], res.pagination);
+      } catch (err) {
+        console.error('Error loading products:', err);
+      }
+    }
+
+    function renderProducts(products, pagination) {
+      const tbody = document.getElementById('products-table-body');
+      const badge = document.getElementById('products-count-badge');
+      const pageInfo = document.getElementById('pagination-info');
+      const prevBtn = document.getElementById('prev-page-btn');
+      const nextBtn = document.getElementById('next-page-btn');
+
+      badge.innerText = `${pagination?.total || products.length} Products`;
+      pageInfo.innerText = `Page ${pagination?.page || 1} of ${pagination?.totalPages || 1}`;
+      prevBtn.disabled = (pagination?.page || 1) <= 1;
+      nextBtn.disabled = (pagination?.page || 1) >= (pagination?.totalPages || 1);
+
+      if (products.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--neutral-500); padding: 40px;">
+              No products found matching your filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = products.map(p => {
+        const statusClass = p.status === 'ACTIVE' ? 'badge-active' : (p.status === 'INACTIVE' ? 'badge-inactive' : 'badge-archived');
+        const variantCount = p._count?.variants || 0;
+        const taxCount = p.productTaxRules?.length || 0;
+
+        return `
+          <tr>
+            <td>
+              <strong>${p.name}</strong>
+              ${p.description ? `<div style="font-size: 0.8rem; color: var(--neutral-500); max-width: 280px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.description}</div>` : ''}
+            </td>
+            <td><span class="badge badge-fixed">${p.productType}</span></td>
+            <td><strong>${api.formatCurrency(p.salesPrice)}</strong></td>
+            <td style="color: var(--neutral-500);">${api.formatCurrency(p.costPrice)}</td>
+            <td>
+              <a href="product-details.html?id=${p.id}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+                ${variantCount} variant${variantCount === 1 ? '' : 's'}
+              </a>
+            </td>
+            <td><span class="badge ${statusClass}">${p.status}</span></td>
+            <td style="text-align: right; white-space: nowrap;">
+              <a href="product-details.html?id=${p.id}" class="btn btn-secondary btn-sm" title="View details, variants & taxes">Details</a>
+              <a href="product-form.html?id=${p.id}" class="btn btn-secondary btn-sm admin-only" title="Edit product">Edit</a>
+              <button onclick="toggleProductStatus(${p.id}, '${p.status}')" class="btn btn-secondary btn-sm admin-only">
+                ${p.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function toggleProductStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      try {
+        await api.request(`/products/${id}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: newStatus })
+        });
+        api.showToast(`Product set to ${newStatus}`, 'success');
+        loadPageData();
+      } catch (err) {
+        console.error('Error toggling status:', err);
+      }
+    }
+
+    document.getElementById('apply-filter-btn').addEventListener('click', () => {
+      currentPage = 1;
+      loadPageData();
+    });
+
+    document.getElementById('reset-filter-btn').addEventListener('click', () => {
+      document.getElementById('search-input').value = '';
+      document.getElementById('status-filter').value = '';
+      document.getElementById('type-filter').value = '';
+      currentPage = 1;
+      loadPageData();
+    });
+
+    document.getElementById('prev-page-btn').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadPageData();
+      }
+    });
+
+    document.getElementById('next-page-btn').addEventListener('click', () => {
+      currentPage++;
+      loadPageData();
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPageData);
+    window.loadPageData = loadPageData;
+  </script>
+</body>
+</html>
+
