@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice Details — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html" class="active">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Invoice Overview</div>
+      <div class="topbar-actions">
+        <a href="invoices.html" class="btn btn-secondary">Back to List</a>
+        <a id="btn-download-pdf" href="#" target="_blank" class="btn btn-secondary">Download PDF</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- Invoice Header Box -->
+      <div class="invoice-header-box">
+        <div>
+          <div style="font-size: 0.85rem; opacity: 0.8; text-transform: uppercase;">Tax Invoice</div>
+          <h2 id="inv-number" style="margin: 4px 0 8px 0;">Loading...</h2>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span id="inv-status-badge" class="badge">CONFIRMED</span>
+            <span id="inv-overdue-tag"></span>
+            <span id="inv-customer-name" style="opacity: 0.9;">Customer</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button id="btn-pay-now" class="btn btn-primary" style="display: none; background: #2563eb; font-weight: 700;">
+            💳 Pay Now with Razorpay
+          </button>
+          <button id="btn-confirm-invoice" class="btn btn-success btn-sm" style="display: none;">Confirm DRAFT</button>
+          <button id="btn-cancel-invoice" class="btn btn-danger btn-sm" style="display: none;">Cancel Invoice</button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Left: Line items & Payment history -->
+        <div>
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+              <h3 class="card-title">Itemized Invoice Lines</h3>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="text-align: center;">Qty</th>
+                  <th style="text-align: right;">Unit Price</th>
+                  <th style="text-align: right;">Tax</th>
+                  <th style="text-align: right;">Line Total</th>
+                </tr>
+              </thead>
+              <tbody id="inv-lines-tbody">
+                <tr><td colspan="5" style="text-align: center; color: var(--neutral-500); padding: 24px;">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Applied Payments Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Allocated Payment Transactions</h3>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Payment Ref</th>
+                  <th>Method</th>
+                  <th>Date</th>
+                  <th style="text-align: right;">Allocated</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="inv-payments-tbody">
+                <tr><td colspan="5" style="text-align: center; color: var(--neutral-500); padding: 16px;">No payments recorded yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Financial Summary & Dates -->
+        <div>
+          <div class="card summary-card" style="margin-bottom: 24px;">
+            <h3 style="margin-bottom: 16px;">Invoice Balance</h3>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="inv-subtotal">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Discounts Applied</span>
+              <span id="inv-discount">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Statutory Tax</span>
+              <span id="inv-tax">₹0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total Invoice Amount</span>
+              <span id="inv-total">₹0.00</span>
+            </div>
+            <div class="summary-row" style="margin-top: 8px;">
+              <span style="color: var(--success); font-weight: 600;">Amount Paid</span>
+              <span id="inv-paid" style="color: var(--success); font-weight: 600;">₹0.00</span>
+            </div>
+            <div class="summary-row" style="border-top: 1px solid var(--neutral-300); padding-top: 8px;">
+              <span style="color: var(--danger); font-weight: 700;">Balance Due</span>
+              <span id="inv-balance" style="color: var(--danger); font-weight: 700; font-size: 1.1rem;">₹0.00</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 style="margin-bottom: 12px;">Billing Metadata</h4>
+            <div style="font-size: 0.9rem; color: var(--neutral-600); line-height: 1.8;">
+              <div><strong>Issue Date:</strong> <span id="inv-date">—</span></div>
+              <div><strong>Due Date:</strong> <span id="inv-due">—</span></div>
+              <div><strong>Billing Window:</strong> <span id="inv-window">—</span></div>
+              <div><strong>Parent Subscription:</strong> <span id="inv-sub-link">None</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/invoice-detail.js"></script>
+</body>
+</html>
+

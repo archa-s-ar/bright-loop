@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Subscriptions — Customer Portal | Brightloop</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/customer/dashboard.html" class="nav-item">
+          <span>🏢 Account Overview</span>
+        </a>
+        <a href="/customer/quotations.html" class="nav-item">
+          <span>📄 My Quotations</span>
+        </a>
+        <a href="/customer/subscriptions.html" class="nav-item active">
+          <span>📑 My Subscriptions</span>
+        </a>
+        <a href="/customer/invoices.html" class="nav-item">
+          <span>💳 Invoices & Payments</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">C</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Customer User</div>
+            <span id="user-role-badge" class="badge badge-customer">CUSTOMER</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Active Software Subscriptions</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Filter Bar -->
+        <div class="table-card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 220px;">
+              <input
+                type="text"
+                id="search-input"
+                class="form-control"
+                placeholder="Search by subscription # or plan..."
+              />
+            </div>
+            <div style="width: 180px;">
+              <select id="status-filter" class="form-control">
+                <option value="">All Statuses</option>
+                <option value="ACTIVE" selected>ACTIVE Only</option>
+                <option value="PAUSED">PAUSED</option>
+                <option value="CLOSED">CLOSED</option>
+                <option value="PENDING">PENDING</option>
+              </select>
+            </div>
+            <button id="refresh-btn" class="btn btn-secondary btn-sm">
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Subscriptions Table -->
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="table" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Subscription #</th>
+                  <th>Plan Name</th>
+                  <th>Billing Cycle</th>
+                  <th>Current Period</th>
+                  <th>Next Billing Date</th>
+                  <th>Auto Renew</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="subscriptions-tbody">
+                <tr>
+                  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                    Loading your subscriptions...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Subscription Details Modal -->
+  <div id="sub-modal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 id="modal-sub-number" style="font-size: 1.2rem;">Subscription Details</h3>
+        <button id="close-sub-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+        <!-- Header Info -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Plan</div>
+            <div id="modal-plan-name" style="font-weight: 700; font-size: 1.15rem; margin-top: 2px;">--</div>
+            <div id="modal-plan-mode" style="font-size: 0.85rem; color: var(--text-muted);">--</div>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Billing Schedule</div>
+            <div id="modal-billing-cycle" style="font-weight: 600; margin-top: 2px;">--</div>
+            <div id="modal-next-billing" style="font-size: 0.85rem; color: var(--text-muted);">--</div>
+          </div>
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Status</div>
+            <div id="modal-sub-status" style="margin-top: 4px;">--</div>
+          </div>
+        </div>
+
+        <!-- Line items -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Included Products & Licenses</h4>
+        <div class="table-responsive" style="margin-bottom: 24px;">
+          <table class="table" style="width: 100%; font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>Product Offering</th>
+                <th>Variant / Specification</th>
+                <th style="text-align: right;">Quantity</th>
+                <th style="text-align: right;">Unit Price (INR)</th>
+              </tr>
+            </thead>
+            <tbody id="modal-lines-tbody">
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Invoices under this subscription -->
+        <h4 style="font-size: 0.95rem; margin-bottom: 12px; font-weight: 600;">Generated Invoices</h4>
+        <div class="table-responsive">
+          <table class="table" style="width: 100%; font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Due Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th style="text-align: right;">PDF</th>
+              </tr>
+            </thead>
+            <tbody id="modal-invoices-tbody">
+              <!-- populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    let currentSubscriptions = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['CUSTOMER']);
+      if (!user) return;
+
+      loadSubscriptions();
+
+      document.getElementById('search-input').addEventListener('input', filterAndRender);
+      document.getElementById('status-filter').addEventListener('change', loadSubscriptions);
+      document.getElementById('refresh-btn').addEventListener('click', loadSubscriptions);
+
+      // Modal close
+      const modal = document.getElementById('sub-modal');
+      const closeBtn = document.getElementById('close-sub-modal-btn');
+      closeBtn.addEventListener('click', () => modal.classList.remove('open'));
+    });
+
+    async function loadSubscriptions() {
+      const status = document.getElementById('status-filter').value;
+      const tbody = document.getElementById('subscriptions-tbody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Loading your subscriptions...</td></tr>`;
+
+      try {
+        let url = '/subscriptions?limit=100';
+        if (status) url += `&status=${status}`;
+
+        const res = await api.get(url);
+        currentSubscriptions = res.data?.items || [];
+        filterAndRender();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #ef4444; padding: 24px;">Failed to load subscriptions: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterAndRender() {
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const filtered = currentSubscriptions.filter(s => {
+        return (
+          !search ||
+          s.subscriptionNumber.toLowerCase().includes(search) ||
+          (s.plan?.name && s.plan.name.toLowerCase().includes(search))
+        );
+      });
+
+      renderSubscriptions(filtered);
+    }
+
+    function renderSubscriptions(items) {
+      const tbody = document.getElementById('subscriptions-tbody');
+      if (!items.length) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">No subscriptions found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(s => {
+        const statusBadge = `<span class="badge badge-${s.status.toLowerCase()}">${s.status}</span>`;
+        const periodStr = s.currentPeriodStart && s.currentPeriodEnd
+          ? `${new Date(s.currentPeriodStart).toLocaleDateString()} &rarr; ${new Date(s.currentPeriodEnd).toLocaleDateString()}`
+          : 'N/A';
+        const nextBilling = s.nextBillingDate ? new Date(s.nextBillingDate).toLocaleDateString() : 'N/A';
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: #818cf8;">${s.subscriptionNumber}</td>
+            <td style="font-weight: 600;">${s.plan?.name || 'Custom Plan'}</td>
+            <td><span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #818cf8;">${s.billingCycle || s.plan?.billingCycle || 'MONTHLY'}</span></td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${periodStr}</td>
+            <td style="font-size: 0.85rem; font-weight: 600;">${nextBilling}</td>
+            <td>
+              <span class="badge ${s.autoRenew ? 'badge-active' : 'badge-closed'}">
+                ${s.autoRenew ? 'Yes' : 'No'}
+              </span>
+            </td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+              <button class="btn btn-secondary btn-sm" onclick="viewSubscriptionDetails(${s.id})">
+                Details
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function viewSubscriptionDetails(id) {
+      try {
+        const res = await api.get(`/subscriptions/${id}`);
+        const sub = res.data;
+
+        document.getElementById('modal-sub-number').textContent = `Subscription: ${sub.subscriptionNumber}`;
+        document.getElementById('modal-plan-name').textContent = sub.plan?.name || 'Custom Subscription Plan';
+        document.getElementById('modal-plan-mode').textContent = `Pricing Mode: ${sub.plan?.pricingMode || 'FIXED'}`;
+        document.getElementById('modal-billing-cycle').textContent = sub.billingCycle;
+        document.getElementById('modal-next-billing').textContent = `Next Billing: ${sub.nextBillingDate ? new Date(sub.nextBillingDate).toLocaleDateString() : 'None'}`;
+        document.getElementById('modal-sub-status').innerHTML = `<span class="badge badge-${sub.status.toLowerCase()}">${sub.status}</span>`;
+
+        // Lines
+        const linesTbody = document.getElementById('modal-lines-tbody');
+        if (!sub.lines || !sub.lines.length) {
+          linesTbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 12px;">Plan bundle items covered under base subscription.</td></tr>`;
+        } else {
+          linesTbody.innerHTML = sub.lines.map(line => `
+            <tr>
+              <td style="font-weight: 600;">${line.product?.name || 'Licensed Product'}</td>
+              <td style="color: var(--text-muted);">${line.productVariant?.name || 'Standard'}</td>
+              <td style="text-align: right;">${line.quantity}</td>
+              <td style="text-align: right; font-weight: 600;">₹${parseFloat(line.unitPrice).toFixed(2)}</td>
+            </tr>
+          `).join('');
+        }
+
+        // Invoices
+        const invTbody = document.getElementById('modal-invoices-tbody');
+        if (!sub.invoices || !sub.invoices.length) {
+          invTbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 12px;">No invoices generated yet.</td></tr>`;
+        } else {
+          invTbody.innerHTML = sub.invoices.map(inv => `
+            <tr>
+              <td style="font-weight: 600; color: #818cf8;">${inv.invoiceNumber}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(inv.invoiceDate).toLocaleDateString()}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(inv.dueDate).toLocaleDateString()}</td>
+              <td style="font-weight: 600;">₹${parseFloat(inv.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              <td><span class="badge badge-${inv.status.toLowerCase().replace(/_/g, '-')}">${inv.status}</span></td>
+              <td style="text-align: right;">
+                <a href="/api/invoices/${inv.id}/pdf" target="_blank" class="btn btn-secondary btn-sm">
+                  📥 PDF
+                </a>
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        document.getElementById('sub-modal').classList.add('open');
+      } catch (err) {
+        showToast(err.message || 'Failed to load subscription details', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

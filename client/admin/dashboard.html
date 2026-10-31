@@ -7,6 +7,7 @@
   <meta name="description" content="Brightloop Administrator Control Panel" />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
 </head>
 <body>
   <div class="dashboard-layout">
@@ -24,14 +25,26 @@
         <a href="/admin/users.html" class="nav-item">
           <span>👥 User & Staff Mgmt</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Catalog & Pricing owned by Member 2')">
+        <a href="/products.html" class="nav-item">
           <span>📦 Products & Plans</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Quotations & Subscriptions owned by Member 3')">
+        <a href="/quotations.html" class="nav-item">
+          <span>📄 Quotations</span>
+        </a>
+        <a href="/subscriptions.html" class="nav-item">
           <span>📑 Subscriptions</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Invoicing & Payments owned by Member 4')">
-          <span>💳 Billing & Invoices</span>
+        <a href="/invoices.html" class="nav-item">
+          <span>💳 Invoices</span>
+        </a>
+        <a href="/payments.html" class="nav-item">
+          <span>💵 Payments</span>
+        </a>
+        <a href="/billing-executions.html" class="nav-item">
+          <span>⚡ Billing Scheduler</span>
+        </a>
+        <a href="/analytics.html" class="nav-item">
+          <span>📈 Financial Analytics</span>
         </a>
       </nav>
 
@@ -51,6 +64,9 @@
       <header class="topbar">
         <h1 class="topbar-title">Administrator Console</h1>
         <div class="topbar-actions">
+          <a href="/analytics.html" class="btn btn-secondary btn-sm">
+            <span>📈 View Metrics</span>
+          </a>
           <button id="logout-btn" class="btn btn-secondary btn-sm" onclick="Auth.logout()">
             <span>Sign Out</span>
           </button>
@@ -66,17 +82,17 @@
             <div class="stat-desc">Administrators, staff, and customers</div>
           </div>
           <div class="stat-card">
-            <div class="stat-title">Active Staff</div>
-            <div id="stat-staff-count" class="stat-value">--</div>
-            <div class="stat-desc">Authorized operations team</div>
-          </div>
-          <div class="stat-card">
             <div class="stat-title">Customer Accounts</div>
             <div id="stat-customer-count" class="stat-value">--</div>
             <div class="stat-desc">Subscribed client organizations</div>
           </div>
           <div class="stat-card">
-            <div class="stat-title">API Status</div>
+            <div class="stat-title">Active Subscriptions</div>
+            <div id="stat-active-subs" class="stat-value">--</div>
+            <div class="stat-desc">Live recurring billing contracts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">System Status</div>
             <div class="stat-value" style="color: #10b981;">Operational</div>
             <div class="stat-desc">MySQL 8+ / Express / Prisma 6.19.3</div>
           </div>
@@ -86,7 +102,7 @@
         <div class="table-card" style="padding: 24px; margin-bottom: 24px;">
           <h2 style="font-size: 1.15rem; margin-bottom: 12px;">Brightloop Module Readiness</h2>
           <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 20px;">
-            Core authentication infrastructure is active. Other module controllers can mount to Express via the shared router.
+            All 4 system modules are operational, mounted on the unified Express API layer and backed by the shared MySQL Prisma database.
           </p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
             <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 16px;">
@@ -94,28 +110,43 @@
               <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 1: Auth & Core</h3>
               <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">JWT, Bcrypt, Roles, User/Customer APIs</p>
             </div>
-            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
-              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 16px;">
+              <span class="badge badge-active" style="margin-bottom: 8px;">Active</span>
               <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 2: Catalog & Pricing</h3>
               <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Products, Variants, Plans, Taxes, Discounts</p>
             </div>
-            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
-              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 16px;">
+              <span class="badge badge-active" style="margin-bottom: 8px;">Active</span>
               <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 3: Quotes & Subscriptions</h3>
-              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Quotation Lifecycle & Conversions</p>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Quotation Lifecycle, Conversion & Audits</p>
             </div>
-            <div style="background: rgba(30, 41, 59, 0.4); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 16px;">
-              <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted); margin-bottom: 8px;">Pending</span>
+            <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 16px;">
+              <span class="badge badge-active" style="margin-bottom: 8px;">Active</span>
               <h3 style="font-size: 0.95rem; margin-top: 6px;">Module 4: Billing & Analytics</h3>
-              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Recurring Invoicing, Partial Payments</p>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 4px;">Recurring Billing Engine, Invoices, Razorpay & MRR/ARR</p>
             </div>
           </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div style="display: flex; gap: 12px;">
-          <a href="/admin/users.html" class="btn btn-primary">
-            <span>Manage Users & Staff Accounts</span>
+        <!-- Module Quick Links -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="/admin/users.html" class="btn btn-secondary">
+            <span>👥 Manage Users & Staff</span>
+          </a>
+          <a href="/quotations.html" class="btn btn-secondary">
+            <span>📄 Manage Quotations</span>
+          </a>
+          <a href="/subscriptions.html" class="btn btn-secondary">
+            <span>📑 Manage Subscriptions</span>
+          </a>
+          <a href="/invoices.html" class="btn btn-secondary">
+            <span>💳 Invoices & Payments</span>
+          </a>
+          <a href="/billing-executions.html" class="btn btn-secondary">
+            <span>⚡ Billing Engine</span>
+          </a>
+          <a href="/analytics.html" class="btn btn-primary">
+            <span>📈 Financial Analytics Dashboard</span>
           </a>
         </div>
       </main>
@@ -132,15 +163,18 @@
       if (!user) return;
 
       try {
-        const [usersRes, staffRes, customersRes] = await Promise.all([
-          api.get('/users?limit=1'),
-          api.get('/users?role=STAFF&limit=1'),
-          api.get('/customers?limit=1'),
+        const [usersRes, customersRes, subsRes] = await Promise.all([
+          api.get('/users?limit=1').catch(() => ({ data: { pagination: { total: 0 } } })),
+          api.get('/customers?limit=1').catch(() => ({ data: { pagination: { total: 0 } } })),
+          api.get('/subscriptions?limit=100').catch(() => ({ data: { items: [] } })),
         ]);
 
         document.getElementById('stat-total-users').textContent = usersRes.data.pagination.total;
-        document.getElementById('stat-staff-count').textContent = staffRes.data.pagination.total;
         document.getElementById('stat-customer-count').textContent = customersRes.data.pagination.total;
+
+        const subs = subsRes.data?.items || [];
+        const activeCount = subs.filter(s => s.status === 'ACTIVE').length;
+        document.getElementById('stat-active-subs').textContent = activeCount;
       } catch (e) {
         console.error('Failed to load dashboard metrics:', e);
       }

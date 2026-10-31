@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Quotation — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html" class="active">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Create Quotation</div>
+      <div class="topbar-actions">
+        <a href="quotations.html" class="btn btn-secondary">Cancel</a>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Left: Form -->
+        <div class="card">
+          <form id="quote-form">
+            <h3 style="margin-bottom: 16px;">Customer & Plan Setup</h3>
+
+            <div class="form-row">
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label">Customer Organization *</label>
+                <select id="quote-customer-id" class="form-control" required>
+                  <option value="">Select customer...</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label">Subscription Plan *</label>
+                <select id="quote-plan-id" class="form-control" required>
+                  <option value="">Select plan...</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label">Quotation Template (Optional)</label>
+                <select id="quote-template-id" class="form-control">
+                  <option value="">No template (use default)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="flex: 1;">
+                <label class="form-label">Validity (Days)</label>
+                <input type="number" id="quote-validity" class="form-control" value="30" min="1" max="365">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Promotional Discount Code (Optional)</label>
+              <input type="text" id="quote-promo-code" class="form-control" placeholder="e.g. WELCOME10">
+            </div>
+
+            <h3 style="margin: 24px 0 16px 0;">Itemized Line Items</h3>
+            <div id="lines-container"></div>
+
+            <button type="button" class="btn btn-secondary btn-sm" id="add-line-btn" style="margin-top: 8px;">+ Add Custom Product Line</button>
+
+            <div style="margin-top: 32px;">
+              <button type="submit" class="btn btn-primary" id="submit-quote-btn">Draft Quotation</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: Real-time Pricing Summary -->
+        <div>
+          <div class="card summary-card">
+            <h3 style="margin-bottom: 16px;">Price Estimate</h3>
+            <div id="plan-pricing-info" style="color: var(--neutral-600); margin-bottom: 16px; font-size: 0.9rem;">
+              Select a plan to preview pricing mode and base rate.
+            </div>
+            <div class="summary-row">
+              <span>Base Bundle</span>
+              <span id="summary-base">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Addons Subtotal</span>
+              <span id="summary-addons">₹0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Estimated Tax</span>
+              <span id="summary-tax">₹0.00</span>
+            </div>
+            <div class="summary-row total">
+              <span>Estimated Total</span>
+              <span id="summary-total">₹0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/quotation-form.js"></script>
+</body>
+</html>
+

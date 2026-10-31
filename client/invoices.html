@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoices — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html" class="active">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 4: Invoices Active
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Invoice Management</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <div class="card">
+        <div class="card-header">
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+            <input type="text" id="inv-search" class="form-control" placeholder="Search invoice # or customer..." style="width: 260px;">
+            <select id="inv-status-filter" class="form-control" style="width: 160px;">
+              <option value="">All Statuses</option>
+              <option value="CONFIRMED">CONFIRMED</option>
+              <option value="PARTIALLY_PAID">PARTIALLY_PAID</option>
+              <option value="PAID">PAID</option>
+              <option value="DRAFT">DRAFT</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; cursor: pointer;">
+              <input type="checkbox" id="inv-overdue-filter">
+              <span>Show Overdue Only</span>
+            </label>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadInvoices()">Refresh</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Billing Window</th>
+                <th>Due Date</th>
+                <th style="text-align: right;">Total</th>
+                <th style="text-align: right;">Paid</th>
+                <th style="text-align: right;">Balance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invoices-tbody">
+              <tr><td colspan="9" style="text-align: center; color: var(--neutral-500); padding: 32px;">Loading invoices...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/invoices.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Analytics & Reports — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+  <link rel="stylesheet" href="css/analytics.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html" class="active">📈 Financial Analytics</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      Module 4: Financial BI
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Financial Intelligence & Revenue Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">Refresh Data</button>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <!-- KPI Cards Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Monthly Recurring Revenue (MRR)</div>
+          <div id="kpi-mrr" class="metric-highlight" style="color: var(--primary);">₹0.00</div>
+          <small style="color: var(--neutral-500); margin-top: 4px;">Normalized active subscription run-rate</small>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Annual Recurring Revenue (ARR)</div>
+          <div id="kpi-arr" class="metric-highlight" style="color: #0284c7;">₹0.00</div>
+          <small style="color: var(--neutral-500); margin-top: 4px;">MRR &times; 12 Annualized projection</small>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Total Cash Collected</div>
+          <div id="kpi-cash" class="metric-highlight" style="color: var(--success);">₹0.00</div>
+          <small style="color: var(--neutral-500); margin-top: 4px;">Verified succeeded payments</small>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Total Invoiced Revenue</div>
+          <div id="kpi-invoiced" class="metric-highlight">₹0.00</div>
+          <small style="color: var(--neutral-500); margin-top: 4px;">All confirmed & paid invoices</small>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Accounts Receivable (Outstanding)</div>
+          <div id="kpi-outstanding" class="metric-highlight" style="color: #f59e0b;">₹0.00</div>
+          <small style="color: var(--neutral-500); margin-top: 4px;">Unpaid balance due</small>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-title">Overdue Amount</div>
+          <div id="kpi-overdue" class="metric-highlight" style="color: var(--danger);">₹0.00</div>
+          <small id="kpi-overdue-sub" style="color: var(--danger); margin-top: 4px;">0 overdue invoice(s)</small>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="chart-container-card">
+          <h3 style="margin-bottom: 16px;">Accounts Receivable Aging</h3>
+          <div style="height: 280px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="agingChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-container-card">
+          <h3 style="margin-bottom: 16px;">Payment Collections by Method</h3>
+          <div style="height: 280px; display: flex; align-items: center; justify-content: center;">
+            <canvas id="paymentMethodsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculation Methodology Note -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+          <h3 class="card-title">Metric Calculation Methodology</h3>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.9rem; color: var(--neutral-700); line-height: 1.6;">
+          <div>
+            <strong>Invoiced Revenue:</strong> Sum of <code>Invoice.totalAmount</code> across confirmed/paid invoices (excluding cancelled).<br>
+            <strong>Cash Collected:</strong> Exact sum of verified <code>SUCCEEDED</code> payments.<br>
+            <strong>Outstanding Amount:</strong> Total Invoiced minus Succeeded Payments Allocated.
+          </div>
+          <div>
+            <strong>Monthly Recurring Revenue (MRR):</strong> Normalized monthly run rate across all active subscriptions:
+            <code>Daily &times; 30</code>, <code>Weekly &times; 4.333</code>, <code>Monthly &times; 1</code>, <code>Yearly / 12</code>.<br>
+            <strong>Overdue Balance:</strong> Dynamically computed for invoices where <code>dueDate &lt; TODAY</code> and <code>balance &gt; 0</code>.
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/analytics.js"></script>
+</body>
+</html>
+

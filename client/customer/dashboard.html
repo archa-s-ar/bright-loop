@@ -7,6 +7,7 @@
   <meta name="description" content="Manage your company's Brightloop software subscriptions and invoices." />
   <link rel="stylesheet" href="/css/style.css" />
   <link rel="stylesheet" href="/css/dashboard.css" />
+  <link rel="stylesheet" href="/css/billing.css" />
 </head>
 <body>
   <div class="dashboard-layout">
@@ -21,10 +22,13 @@
         <a href="/customer/dashboard.html" class="nav-item active">
           <span>🏢 Account Overview</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Subscription portal owned by Member 3')">
+        <a href="/customer/quotations.html" class="nav-item">
+          <span>📄 My Quotations</span>
+        </a>
+        <a href="/customer/subscriptions.html" class="nav-item">
           <span>📑 My Subscriptions</span>
         </a>
-        <a href="#" class="nav-item" onclick="alert('Invoicing portal owned by Member 4')">
+        <a href="/customer/invoices.html" class="nav-item">
           <span>💳 Invoices & Payments</span>
         </a>
       </nav>
@@ -56,7 +60,7 @@
 
       <main class="content-container">
         <!-- Customer Organization Profile Card -->
-        <div class="table-card" style="padding: 28px; margin-bottom: 28px;">
+        <div class="table-card" style="padding: 28px; margin-bottom: 24px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
             <div>
               <span class="badge badge-customer" style="margin-bottom: 8px;">Organization Profile</span>
@@ -65,7 +69,7 @@
             </div>
             <div>
               <span id="org-currency" class="badge" style="background: rgba(79, 70, 229, 0.2); color: #818cf8; font-size: 0.85rem; padding: 6px 14px;">
-                Currency: INR
+                Currency: INR (₹)
               </span>
             </div>
           </div>
@@ -88,26 +92,94 @@
           </div>
         </div>
 
-        <!-- Quick Integration Shells -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-          <div class="table-card" style="padding: 24px;">
-            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Active Subscriptions</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-              View software plans and upcoming renewals managed by Member 3.
-            </p>
-            <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted);">
-              Integrated with Member 3 module
-            </span>
+        <!-- Metrics Grid -->
+        <div class="stats-grid" style="margin-bottom: 24px;">
+          <div class="stat-card">
+            <div class="stat-title">Active Subscriptions</div>
+            <div id="stat-active-subs" class="stat-value">0</div>
+            <div class="stat-desc">Software plans currently running</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Pending Quotations</div>
+            <div id="stat-pending-quotes" class="stat-value">0</div>
+            <div class="stat-desc">Awaiting your approval</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Outstanding Invoices</div>
+            <div id="stat-outstanding-amount" class="stat-value" style="color: #f59e0b;">₹0.00</div>
+            <div id="stat-unpaid-invoices" class="stat-desc">0 invoices pending</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Overdue Invoices</div>
+            <div id="stat-overdue-count" class="stat-value" style="color: #ef4444;">0</div>
+            <div class="stat-desc">Past due payment date</div>
+          </div>
+        </div>
+
+        <!-- Portal Hub Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 24px;">
+          <div class="table-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 8px;">📄 Quotations</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                Review price quotes, examine breakdown lines, download official PDF copies, and accept quotes to activate subscriptions.
+              </p>
+            </div>
+            <a href="/customer/quotations.html" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
+              View Quotations &rarr;
+            </a>
           </div>
 
-          <div class="table-card" style="padding: 24px;">
-            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Invoices & Payments</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
-              Download tax invoice PDFs and pay outstanding balances managed by Member 4.
-            </p>
-            <span class="badge" style="background: rgba(148, 163, 184, 0.1); color: var(--text-muted);">
-              Integrated with Member 4 module
-            </span>
+          <div class="table-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 8px;">📑 Active Subscriptions</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                Inspect your subscription plans, billing periods, automated renewal dates, and provisioned license quantities.
+              </p>
+            </div>
+            <a href="/customer/subscriptions.html" class="btn btn-secondary btn-sm" style="align-self: flex-start;">
+              View Subscriptions &rarr;
+            </a>
+          </div>
+
+          <div class="table-card" style="padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 style="font-size: 1.1rem; margin-bottom: 8px;">💳 Invoices & Payments</h3>
+              <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                Access itemized GST tax invoices, monitor outstanding balances, download PDF invoices, and pay online securely.
+              </p>
+            </div>
+            <a href="/customer/invoices.html" class="btn btn-primary btn-sm" style="align-self: flex-start;">
+              View & Pay Invoices &rarr;
+            </a>
+          </div>
+        </div>
+
+        <!-- Recent Invoices Table -->
+        <div class="table-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border-subtle);">
+            <h3 style="font-size: 1.05rem; margin: 0;">Recent Invoices</h3>
+            <a href="/customer/invoices.html" style="font-size: 0.85rem; color: #818cf8; text-decoration: none;">View All &rarr;</a>
+          </div>
+          <div class="table-responsive">
+            <table class="table" style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Due Date</th>
+                  <th>Amount</th>
+                  <th>Balance Due</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="recent-invoices-body">
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">Loading recent invoices...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
@@ -173,11 +245,14 @@
       if (user.customer) {
         document.getElementById('org-company-name').textContent = user.customer.companyName || 'My Organization';
         document.getElementById('org-email').textContent = user.customer.email || user.email;
-        document.getElementById('org-currency').textContent = `Currency: ${user.customer.currency || 'INR'}`;
+        document.getElementById('org-currency').textContent = `Currency: ${user.customer.currency || 'INR'} (₹)`;
         document.getElementById('org-tax-id').textContent = user.customer.taxRegistrationNumber || 'Not provided';
         document.getElementById('org-phone').textContent = user.customer.phone || 'Not provided';
         document.getElementById('org-address').textContent = user.customer.billingAddress || 'Not provided';
       }
+
+      // Load Metrics & Invoices
+      loadCustomerDashboardData();
 
       // Password Modal Handlers
       const pwModal = document.getElementById('password-modal');
@@ -228,6 +303,86 @@
         }
       });
     });
+
+    async function loadCustomerDashboardData() {
+      try {
+        const [subsRes, quotesRes, invsRes] = await Promise.all([
+          api.get('/subscriptions?limit=50').catch(() => ({ data: { items: [] } })),
+          api.get('/quotations?limit=50').catch(() => ({ data: { items: [] } })),
+          api.get('/invoices?limit=10').catch(() => ({ data: { items: [] } }))
+        ]);
+
+        const subs = subsRes.data?.items || [];
+        const activeSubs = subs.filter(s => s.status === 'ACTIVE');
+        document.getElementById('stat-active-subs').textContent = activeSubs.length;
+
+        const quotes = quotesRes.data?.items || [];
+        const pendingQuotes = quotes.filter(q => ['SENT', 'DRAFT'].includes(q.status));
+        document.getElementById('stat-pending-quotes').textContent = pendingQuotes.length;
+
+        const invoices = invsRes.data?.items || [];
+        let totalOutstanding = 0;
+        let unpaidCount = 0;
+        let overdueCount = 0;
+
+        invoices.forEach(inv => {
+          const balance = parseFloat(inv.outstandingAmount || inv.totalAmount || 0);
+          if (balance > 0 && inv.status !== 'CANCELLED') {
+            totalOutstanding += balance;
+            unpaidCount++;
+          }
+          if (inv.isOverdue) overdueCount++;
+        });
+
+        document.getElementById('stat-outstanding-amount').textContent = '₹' + totalOutstanding.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('stat-unpaid-invoices').textContent = `${unpaidCount} invoice${unpaidCount === 1 ? '' : 's'} pending`;
+        document.getElementById('stat-overdue-count').textContent = overdueCount;
+
+        // Render Recent Invoices
+        const tbody = document.getElementById('recent-invoices-body');
+        if (!invoices.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No invoices generated yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = invoices.slice(0, 5).map(inv => {
+          const isOverdue = inv.isOverdue;
+          const statusBadge = isOverdue
+            ? `<span class="badge badge-overdue">⚠️ OVERDUE</span>`
+            : `<span class="badge badge-${inv.status.toLowerCase().replace(/_/g, '-')}">${inv.status}</span>`;
+
+          const balance = parseFloat(inv.outstandingAmount || inv.totalAmount || 0);
+
+          return `
+            <tr>
+              <td style="font-weight: 600;">${inv.invoiceNumber}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(inv.invoiceDate).toLocaleDateString()}</td>
+              <td style="color: var(--text-muted); font-size: 0.85rem;">${new Date(inv.dueDate).toLocaleDateString()}</td>
+              <td style="font-weight: 600;">₹${parseFloat(inv.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+              <td style="font-weight: 700; color: ${balance > 0 ? '#f59e0b' : '#10b981'};">
+                ₹${balance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </td>
+              <td>${statusBadge}</td>
+              <td style="text-align: right;">
+                <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                  <a href="/api/invoices/${inv.id}/pdf" target="_blank" class="btn btn-secondary btn-sm" title="Download PDF">
+                    📥 PDF
+                  </a>
+                  ${balance > 0 && inv.status !== 'CANCELLED' ? `
+                    <a href="/customer/invoices.html?pay=${inv.id}" class="btn btn-primary btn-sm">
+                      Pay
+                    </a>
+                  ` : ''}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error('Failed to load customer dashboard data:', err);
+      }
+    }
   </script>
 </body>
 </html>

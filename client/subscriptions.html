@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscriptions — Brightloop</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/billing.css">
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a href="index.html" class="sidebar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Bright<span>loop</span>
+    </a>
+    <ul class="sidebar-nav">
+      <li><a href="index.html">📊 Overview</a></li>
+      <li><a href="products.html">📦 Products</a></li>
+      <li><a href="plans.html">📑 Plans</a></li>
+      <li><a href="quotations.html">📝 Quotations</a></li>
+      <li><a href="quotation-templates.html">📋 Quote Templates</a></li>
+      <li><a href="subscriptions.html" class="active">🔄 Subscriptions</a></li>
+      <li><a href="invoices.html">🧾 Invoices</a></li>
+      <li><a href="payments.html">💳 Payments</a></li>
+      <li><a href="billing-executions.html">⚙️ Billing Scheduler</a></li>
+      <li><a href="analytics.html">📈 Financial Analytics</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">Subscription Lifecycle Management</div>
+      <div class="topbar-actions">
+        <div class="role-switcher">
+          <span>Role:</span>
+          <select id="global-role-select" class="role-select">
+            <option value="ADMIN">ADMIN</option>
+            <option value="STAFF">STAFF</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main class="content-container">
+      <div class="card">
+        <div class="card-header">
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <input type="text" id="sub-search" class="form-control" placeholder="Search sub # or company..." style="width: 260px;">
+            <select id="sub-status-filter" class="form-control" style="width: 160px;">
+              <option value="">All Statuses</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="PAUSED">PAUSED</option>
+              <option value="CLOSED">CLOSED</option>
+              <option value="CONFIRMED">CONFIRMED</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadSubscriptions()">Refresh</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Subscription #</th>
+                <th>Customer</th>
+                <th>Plan Name</th>
+                <th>Billing Cycle</th>
+                <th>Next Billing Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="subs-tbody">
+              <tr><td colspan="7" style="text-align: center; color: var(--neutral-500); padding: 32px;">Loading subscriptions...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/pages/subscriptions.js"></script>
+</body>
+</html>
+
