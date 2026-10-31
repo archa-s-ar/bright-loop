@@ -10,7 +10,11 @@
     "prisma:migrate": "prisma migrate dev",
     "test": "node --test tests/catalog.test.js tests/modules3-4.test.js",
     "test:billing": "node --test tests/modules3-4.test.js tests/e2e-billing.test.js",
-    "test:auth": "node test-auth.js"
+    "test:auth": "node test-auth.js",
+    "prisma:seed": "node prisma/seed.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",
