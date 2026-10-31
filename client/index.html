@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brightloop — Product Catalog & Pricing Dashboard</title>
@@ -203,6 +204,33 @@
     document.addEventListener('DOMContentLoaded', loadPageData);
     window.loadPageData = loadPageData;
   </script>
+</body>
+</html>
+
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brightloop — Subscription Management System</title>
+  <meta http-equiv="refresh" content="0; url=/login.html" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.checkSession();
+      if (user) {
+        window.location.href = Auth.getDashboardPath(user.role);
+      } else {
+        window.location.href = '/login.html';
+      }
+    });
+  </script>
+</head>
+<body style="display: flex; align-items: center; justify-content: center; height: 100vh;">
+  <div style="text-align: center; color: var(--text-muted);">
+    <div class="auth-brand-icon" style="width: 48px; height: 48px; font-size: 1.5rem; margin: 0 auto 16px;">B</div>
+    <p>Loading Brightloop Subscription Management System...</p>
+  </div>
 </body>
 </html>
 

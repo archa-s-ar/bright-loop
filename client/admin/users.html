@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User & Staff Management — Brightloop</title>
+  <meta name="description" content="Manage Brightloop users, administrators, staff members, and customers." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard.html" class="nav-item">
+          <span>📊 Overview</span>
+        </a>
+        <a href="/admin/users.html" class="nav-item active">
+          <span>👥 User & Staff Mgmt</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Catalog & Pricing owned by Member 2')">
+          <span>📦 Products & Plans</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Quotations & Subscriptions owned by Member 3')">
+          <span>📑 Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Invoicing & Payments owned by Member 4')">
+          <span>💳 Billing & Invoices</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">A</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Administrator</div>
+            <span id="user-role-badge" class="badge badge-admin">ADMIN</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">User & Staff Management</h1>
+        <div class="topbar-actions">
+          <button id="open-staff-modal-btn" class="btn btn-primary btn-sm">
+            <span>+ Create Staff Account</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <div class="table-card">
+          <div class="table-header">
+            <div>
+              <h2 class="table-title">System Users Directory</h2>
+              <p style="font-size: 0.8rem; color: var(--text-faint); margin-top: 2px;">
+                View, filter, and control account activation status.
+              </p>
+            </div>
+            <div class="table-filters">
+              <input
+                type="text"
+                id="search-input"
+                class="form-control"
+                placeholder="Search name or email..."
+                style="width: 220px;"
+              />
+              <select id="role-filter" class="form-control" style="width: 140px;">
+                <option value="">All Roles</option>
+                <option value="ADMIN">ADMIN</option>
+                <option value="STAFF">STAFF</option>
+                <option value="CUSTOMER">CUSTOMER</option>
+              </select>
+              <select id="status-filter" class="form-control" style="width: 130px;">
+                <option value="">All Statuses</option>
+                <option value="true">Active</option>
+                <option value="false">Deactivated</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Organization</th>
+                  <th>Status</th>
+                  <th>Last Login</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                    Loading system users...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Create Staff Modal -->
+  <div id="staff-modal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 style="font-size: 1.15rem;">Create Staff Account</h3>
+        <button id="close-modal-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div id="modal-alert" class="auth-alert auth-alert-error" style="margin-bottom: 16px;"></div>
+
+      <form id="create-staff-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="staff-name">Staff Full Name *</label>
+          <input
+            type="text"
+            id="staff-name"
+            class="form-control"
+            placeholder="e.g. Alex Morgan"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="staff-email">Business Email *</label>
+          <input
+            type="email"
+            id="staff-email"
+            class="form-control"
+            placeholder="alex.m@brightloop.com"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="staff-password">Temporary Password *</label>
+          <input
+            type="password"
+            id="staff-password"
+            class="form-control"
+            placeholder="Must be >8 chars, upper, lower & special"
+            required
+          />
+          <span class="form-hint">Staff member can change this upon initial login.</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancel-modal-btn" class="btn btn-secondary">
+            Cancel
+          </button>
+          <button type="submit" id="save-staff-btn" class="btn btn-primary">
+            Create Staff
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/pages/users.js"></script>
+</body>
+</html>

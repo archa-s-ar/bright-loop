@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Portal — Brightloop</title>
+  <meta name="description" content="Brightloop Staff Operations Portal" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="auth-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">B</div>
+        <span style="font-weight: 800; font-size: 1.15rem; color: #fff;">Brightloop</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/staff/dashboard.html" class="nav-item active">
+          <span>📊 Staff Workspace</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Customer listing owned by Member 1 / shared')">
+          <span>🏢 Customer Accounts</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Catalog owned by Member 2')">
+          <span>📦 Products & Plans</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Quotations owned by Member 3')">
+          <span>📑 Quotes & Orders</span>
+        </a>
+        <a href="#" class="nav-item" onclick="alert('Billing owned by Member 4')">
+          <span>💳 Invoices</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div id="user-avatar" class="user-avatar">S</div>
+          <div class="user-info">
+            <div id="user-full-name" class="user-name">Staff Member</div>
+            <span id="user-role-badge" class="badge badge-staff">STAFF</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <h1 class="topbar-title">Staff Operations Portal</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-secondary btn-sm" onclick="Auth.logout()">
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Customer Accounts</div>
+            <div id="stat-customers" class="stat-value">--</div>
+            <div class="stat-desc">Client organizations under service</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Role Privileges</div>
+            <div class="stat-value" style="font-size: 1.25rem; color: #60a5fa;">Staff Access</div>
+            <div class="stat-desc">Quotations, catalog view & customer assistance</div>
+          </div>
+        </div>
+
+        <div class="table-card" style="padding: 24px;">
+          <h2 style="font-size: 1.15rem; margin-bottom: 8px;">Welcome to Staff Operations</h2>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">
+            You are logged in as an authorized Brightloop staff member. Your session is authenticated via secure HTTP-only cookies.
+          </p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await Auth.requireAuth(['STAFF', 'ADMIN']);
+      if (!user) return;
+
+      try {
+        const res = await api.get('/customers?limit=1');
+        document.getElementById('stat-customers').textContent = res.data.pagination.total;
+      } catch (e) {
+        console.error('Failed to load customers count:', e);
+      }
+    });
+  </script>
+</body>
+</html>
